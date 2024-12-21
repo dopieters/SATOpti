@@ -1,9 +1,9 @@
 #include "Cust_Window.h"
-#include "Geom.h"
 
 #define W_WIDTH 680
 #define W_HEIGHT 420
 #define SCALE 100
+
 
 
 Cust_Window::Cust_Window():
@@ -57,9 +57,9 @@ void Cust_Window::Run()
 {
 	m_isRunning = true;
 
-	const int nVertices = 10;
-	Polygon pol = MakeConvexPol(nVertices);
-
+	
+	pol1 = MakeConvexPol(nVertices);
+	pol2 = MakeConvexPol(nVertices);
 
 	while (m_isRunning) {
 		SDL_RenderClear(m_renderer);
@@ -68,27 +68,46 @@ void Cust_Window::Run()
 		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 		SDL_RenderClear(m_renderer);
 
-		SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-
-		const float shiftX = W_WIDTH / 2;
-		const float shiftY = W_HEIGHT / 2;
-		for (int ii = 0; ii < nVertices -1; ++ii) {
-			SDL_RenderDrawLine(m_renderer, pol.vertices[ii].x * SCALE + shiftX, 
-				pol.vertices[ii].y * SCALE + shiftY, 
-				pol.vertices[ii+1].x * SCALE + shiftX, 
-				pol.vertices[ii+1].y * SCALE + shiftY);
-		}
-		SDL_RenderDrawLine(m_renderer, pol.vertices[nVertices - 1].x * SCALE + shiftX, 
-			pol.vertices[nVertices-1].y * SCALE + shiftY,
-			pol.vertices[0].x * SCALE + shiftX, 
-			pol.vertices[0].y * SCALE + shiftY);
-		
+		DrawPolygons();
 		//SDL_RenderDrawLines // for drawing polygon
 
 		// Present the backbuffer
 		SDL_RenderPresent(m_renderer);
 
 	}
+}
+
+void Cust_Window::DrawPolygons()
+{
+	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+
+	const float shiftX = W_WIDTH / 2;
+	const float shiftY = W_HEIGHT / 2;
+	for (int ii = 0; ii < nVertices - 1; ++ii) {
+		SDL_RenderDrawLine(m_renderer, pol1.vertices[ii].x * SCALE + shiftX,
+			pol1.vertices[ii].y * SCALE + shiftY,
+			pol1.vertices[ii + 1].x * SCALE + shiftX,
+			pol1.vertices[ii + 1].y * SCALE + shiftY);
+	}
+	SDL_RenderDrawLine(m_renderer, pol1.vertices[nVertices - 1].x * SCALE + shiftX,
+		pol1.vertices[nVertices - 1].y * SCALE + shiftY,
+		pol1.vertices[0].x * SCALE + shiftX,
+		pol1.vertices[0].y * SCALE + shiftY);
+
+
+	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+
+
+	for (int ii = 0; ii < nVertices - 1; ++ii) {
+		SDL_RenderDrawLine(m_renderer, pol2.vertices[ii].x * SCALE + shiftX,
+			pol2.vertices[ii].y * SCALE + shiftY,
+			pol2.vertices[ii + 1].x * SCALE + shiftX,
+			pol2.vertices[ii + 1].y * SCALE + shiftY);
+	}
+	SDL_RenderDrawLine(m_renderer, pol2.vertices[nVertices - 1].x * SCALE + shiftX,
+		pol2.vertices[nVertices - 1].y * SCALE + shiftY,
+		pol2.vertices[0].x * SCALE + shiftX,
+		pol2.vertices[0].y * SCALE + shiftY);
 }
 
 void Cust_Window::ProcessEvents()
@@ -100,6 +119,14 @@ void Cust_Window::ProcessEvents()
 		if (event.type == SDL_QUIT)
 		{
 			m_isRunning = false;
+		}
+		else if (event.type == SDL_KEYDOWN) {
+			if (event.key.keysym.sym == SDLK_RETURN) {
+				pol1.vertices.clear();
+				pol1 = MakeConvexPol(nVertices);
+				pol2.vertices.clear();
+				pol2 = MakeConvexPol(nVertices);
+			}
 		}
 	}
 }

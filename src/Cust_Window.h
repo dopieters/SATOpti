@@ -2,6 +2,9 @@
 
 #include <SDL2/SDL.h>
 #include <iostream>
+#include"Geom.h"
+
+struct Polygon;
 
 class Cust_Window
 {
@@ -11,7 +14,7 @@ public:
 
 
 	void Run();
-	bool IsValid() { return m_isValid; }
+	bool IsValid() const { return m_isValid; }
 
 private:
 	SDL_Window* m_window = nullptr;
@@ -20,7 +23,11 @@ private:
 	bool m_isValid = false;
 	bool m_isRunning = false;
 
-
+	const int nVertices = 10;
+	Polygon pol1;
+	Polygon pol2;
+	
+	void DrawPolygons();
 	void ProcessEvents();
 };
 

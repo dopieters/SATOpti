@@ -29,5 +29,7 @@ private:
 	
 	void DrawPolygons();
 	void ProcessEvents();
+
+	bool m_isPolIntersect = false;
 };
 

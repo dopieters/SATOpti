@@ -12,8 +12,8 @@ Vertex MakeRandomVertexPt() {
 	return pt;
 }
 
-
-bool CompareByAngle(const Point& a, const Point& b) {
+bool CompareByAngle(const Vertex& a, const Vertex& b)
+{
 	return atan2(a.y, a.x) < atan2(b.y, b.x);
 }
 
@@ -160,9 +160,22 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 	return false;
 }
 
+float CrossProd2D(Vector Va, Vector Vb)
+{
+	return Va.x * Vb.y - Va.y * Vb.x;
+}
+
 bool SegmentIntersect(Point A, Point B, Point C, Point D)
 {
-	return false;
+	// check the winding of triangles ABD - ABC
+	// and CDB - CDA
+	if (CrossProd2D(B-A, D-A) * CrossProd2D(B-A, C-A) <= 0 
+		&& CrossProd2D(D-C, A-C) * CrossProd2D(D-C, B-C) <= 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
@@ -193,5 +206,17 @@ bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
 
 bool IsPointInsidePolygon(Point A, const Polygon& pol)
 {
-	return false;
+	float sign = CrossProd2D(A-pol.vertices[0], pol.vertices[1]- pol.vertices[0]);
+	int NpolVert = pol.vertices.size();
+	for (int ii = 1; ii < NpolVert; ++ii) {
+		Point V1 = pol.vertices[ii];
+		Point V2 = pol.vertices[(ii+1) % NpolVert];
+
+		float cross = CrossProd2D(A - V1, V2 - V1);
+		if (sign * cross < 0) {
+			return false;
+		}
+	}
+
+	return true;
 }

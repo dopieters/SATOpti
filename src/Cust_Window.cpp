@@ -60,6 +60,8 @@ void Cust_Window::Run()
 	
 	pol1 = MakeConvexPol(nVertices);
 	pol2 = MakeConvexPol(nVertices);
+	 
+	m_isPolIntersect = DoPolygonsIntersects(pol1, pol2);
 
 	while (m_isRunning) {
 		SDL_RenderClear(m_renderer);
@@ -79,7 +81,10 @@ void Cust_Window::Run()
 
 void Cust_Window::DrawPolygons()
 {
-	SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
+	if (!m_isPolIntersect)
+		SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
+	else
+		SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, 255);
 
 	const float shiftX = W_WIDTH / 2;
 	const float shiftY = W_HEIGHT / 2;
@@ -94,8 +99,8 @@ void Cust_Window::DrawPolygons()
 		pol1.vertices[0].x * SCALE + shiftX,
 		pol1.vertices[0].y * SCALE + shiftY);
 
-
-	SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
+	if (!m_isPolIntersect)
+		SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
 
 
 	for (int ii = 0; ii < nVertices - 1; ++ii) {
@@ -126,6 +131,9 @@ void Cust_Window::ProcessEvents()
 				pol1 = MakeConvexPol(nVertices);
 				pol2.vertices.clear();
 				pol2 = MakeConvexPol(nVertices);
+
+				m_isPolIntersect = DoPolygonsIntersects(pol1, pol2);
+
 			}
 		}
 	}

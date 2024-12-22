@@ -126,3 +126,72 @@ Polygon MakeConvexPol(int nVertices) {
 
 	return pol;
 }
+
+bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
+{
+	// Test if edges intersects
+	{
+		const int nAVert = A.vertices.size();
+		const int nBVert = B.vertices.size();
+		
+		for (int i = 0; i < nAVert; ++i) {
+			int nextA = (i + 1) % nAVert; 
+			for (int j = 0; j < nBVert; ++j)
+			{
+				int nextB = (j + 1) % nBVert;
+				if (SegmentIntersect(A.vertices[i], A.vertices[nextA],
+					B.vertices[j], B.vertices[nextB])) 
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	// Test if point inside each other
+	{
+		if (PolygonIncludeInEachOther(A, B)) {
+			return true;
+		}
+	}
+
+
+	// no intersection found
+	return false;
+}
+
+bool SegmentIntersect(Point A, Point B, Point C, Point D)
+{
+	return false;
+}
+
+bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
+{
+	// A inside B
+	{
+		const int nAVert = A.vertices.size();
+		for (int ii = 0; ii < nAVert; ++ii) {
+			if (IsPointInsidePolygon(A.vertices[ii], B)) {
+				return true;
+			}
+		}
+	}
+
+	// B inside A
+	{
+		const int nBVert = B.vertices.size();
+		for (int ii = 0; ii < nBVert; ++ii) {
+			if (IsPointInsidePolygon(B.vertices[ii], A)) {
+				return true;
+			}
+		}
+	}
+
+
+	return false;
+}
+
+bool IsPointInsidePolygon(Point A, const Polygon& pol)
+{
+	return false;
+}

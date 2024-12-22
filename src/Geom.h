@@ -25,4 +25,14 @@ struct Polygon
 // https://cglab.ca/~sander/misc/ConvexGeneration/convex.html
 Polygon MakeConvexPol(int nVertices);
 
+bool DoPolygonsIntersects(const Polygon& A, const Polygon& B);
+
+bool SegmentIntersect(Point A, Point B, Point C, Point D);
+
+// Check for every vertex if it is includes in the other polygon
+bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B);
+
+bool IsPointInsidePolygon(Point A, const Polygon& pol);
+
+
 

@@ -2,7 +2,7 @@
 
 #define W_WIDTH 680
 #define W_HEIGHT 420
-#define SCALE 100
+#define SCALE 75
 
 
 
@@ -79,7 +79,7 @@ void Cust_Window::Run()
 
 void Cust_Window::DrawPolygons()
 {
-	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
 
 	const float shiftX = W_WIDTH / 2;
 	const float shiftY = W_HEIGHT / 2;
@@ -95,7 +95,7 @@ void Cust_Window::DrawPolygons()
 		pol1.vertices[0].y * SCALE + shiftY);
 
 
-	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
 
 
 	for (int ii = 0; ii < nVertices - 1; ++ii) {

@@ -35,6 +35,11 @@ struct Polygon
 Polygon MakeConvexPol(int nVertices);
 
 bool DoPolygonsIntersects(const Polygon& A, const Polygon& B);
+bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B);
+bool PolygonInterTestSAT(const Polygon& A, const Polygon& B);
+
+// first minProj, second maxProj
+std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d);
 
 float CrossProd2D(Vector Va, Vector Vb);
 

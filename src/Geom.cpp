@@ -1,6 +1,7 @@
 #include "Geom.h"
 #include <random>
 #include <cassert> // assert
+#include <limits> // numeric_limits
 
 
 Vertex MakeRandomVertexPt() {
@@ -129,18 +130,28 @@ Polygon MakeConvexPol(int nVertices) {
 
 bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 {
+	bool bInterBForce = PolygonsInterTestBForce(A, B);
+	bool bInterSAT = PolygonInterTestSAT(A, B);
+
+	assert(bInterBForce == bInterSAT && "Intersection tests disagree");
+
+	return bInterBForce;
+}
+
+bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B)
+{
 	// Test if edges intersects
 	{
 		const int nAVert = A.vertices.size();
 		const int nBVert = B.vertices.size();
-		
+
 		for (int i = 0; i < nAVert; ++i) {
-			int nextA = (i + 1) % nAVert; 
+			const int nextA = (i + 1) % nAVert;
 			for (int j = 0; j < nBVert; ++j)
 			{
-				int nextB = (j + 1) % nBVert;
+				const int nextB = (j + 1) % nBVert;
 				if (SegmentIntersect(A.vertices[i], A.vertices[nextA],
-					B.vertices[j], B.vertices[nextB])) 
+					B.vertices[j], B.vertices[nextB]))
 				{
 					return true;
 				}
@@ -158,6 +169,60 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 
 	// no intersection found
 	return false;
+}
+
+bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
+{
+	std::vector<Vector> axisToTestAgainst;
+	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
+
+	// A's axes
+	{
+		int nVertA = A.vertices.size();
+		for (int ii = 0; ii < nVertA; ++ii) {
+			const Vector edgeVec = A.vertices[ii] - A.vertices[(ii + 1) % nVertA];
+			axisToTestAgainst.emplace_back(Vector{-edgeVec.y , edgeVec.x});
+		}
+	}
+
+	// B's axes
+	{
+		int nVertB = B.vertices.size();
+		for (int ii = 0; ii < nVertB; ++ii) {
+			const Vector edgeVec = B.vertices[ii] - B.vertices[(ii + 1) % nVertB];
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
+		}
+	}
+
+	// Test axes
+	for (const Vector axis : axisToTestAgainst) {
+		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
+		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
+
+		if (AProj.first > BProj.second || AProj.second < BProj.first) {
+			return false;
+		}
+
+	}
+
+	return true;
+}
+
+std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
+{
+	float minProj = std::numeric_limits<float>::infinity();
+	float maxProj = - std::numeric_limits<float>::infinity();
+
+	{
+		int nVertA = A.vertices.size();
+		for (int ii = 0; ii < nVertA; ++ii) {
+			float proj = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y;
+			minProj = std::min(minProj, proj);
+			maxProj = std::max(maxProj, proj);
+		}
+	}
+
+	return std::pair<float, float>(minProj, maxProj);
 }
 
 float CrossProd2D(Vector Va, Vector Vb)
@@ -200,21 +265,23 @@ bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
 		}
 	}
 
-
 	return false;
 }
 
 bool IsPointInsidePolygon(Point A, const Polygon& pol)
 {
-	float sign = CrossProd2D(A-pol.vertices[0], pol.vertices[1]- pol.vertices[0]);
-	int NpolVert = pol.vertices.size();
-	for (int ii = 1; ii < NpolVert; ++ii) {
-		Point V1 = pol.vertices[ii];
-		Point V2 = pol.vertices[(ii+1) % NpolVert];
+	// Check if point A on the same side of the edges
+	{
+		float sign = CrossProd2D(A - pol.vertices[0], pol.vertices[1] - pol.vertices[0]);
+		int NpolVert = pol.vertices.size();
+		for (int ii = 1; ii < NpolVert; ++ii) {
+			Point V1 = pol.vertices[ii];
+			Point V2 = pol.vertices[(ii + 1) % NpolVert];
 
-		float cross = CrossProd2D(A - V1, V2 - V1);
-		if (sign * cross < 0) {
-			return false;
+			float cross = CrossProd2D(A - V1, V2 - V1);
+			if (sign * cross < 0) {
+				return false;
+			}
 		}
 	}
 

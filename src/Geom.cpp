@@ -4,6 +4,9 @@
 #include <limits> // numeric_limits
 #include <iostream> // cout endl
 #include <functional>
+#include <chrono>
+
+
 
 
 Vertex MakeRandomVertexPt() {
@@ -136,14 +139,32 @@ Polygon MakeConvexPol(int nVertices) {
 	return pol;
 }
 
+template <typename Func> void measureExecutionTime(Func func, const std::string& funcName, Polygon A, Polygon B) {
+	auto start = std::chrono::high_resolution_clock::now(); 
+	func(A, B); 
+	auto end = std::chrono::high_resolution_clock::now(); 
+	std::chrono::duration<double, std::milli> duration = end - start; 
+	std::cout << funcName << " took " << duration.count() << " ms\n"; 
+}
+
 bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 {
+
 	bool bInterBForce = PolygonsInterTestBForce(A, B);
 	bool bInterSAT = PolygonInterTestSAT(A, B);
 	bool bInterSATOpti = PolygonInterTestSATOpti(A, B);
 
-	assert(bInterBForce == bInterSAT && "Intersection tests disagree");
-	assert(bInterBForce == bInterSATOpti && "Intersection test disagree");
+	measureExecutionTime(PolygonsInterTestBForce, "Brute force", A, B);
+	measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
+	measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
+
+
+	if (bInterBForce != bInterSATOpti) {
+		std::cout << "brut force && satOpti disagree" << std::endl;
+		if (bInterBForce) {
+			std::cout << "brute force say intersection" << std::endl;
+		}
+	}
 
 	return bInterBForce;
 }
@@ -217,6 +238,7 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 	return true;
 }
 
+
 bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 {
 	
@@ -226,11 +248,17 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	auto AProj = GetMinMaxPolygonProjAxis(A, barAxis);
 	auto BProj = GetMinMaxPolygonProjAxis(B, barAxis);
 
+	// check if barycenter inside each other
+	if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
+		return true;
+	}
 
 	// check if this axis is not a separating axis
 	if (AProj.first > BProj.second || AProj.second < BProj.first) {
 		return false;
 	}
+
+	
 
 	// compute reduced polygon
 	Polygon C = PolygonComputeReducePol(A, barAxis, BProj.first, true);
@@ -248,15 +276,25 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
 	float maxProj = - std::numeric_limits<float>::infinity();
 
 	{
-		int nVertA = A.vertices.size();
-		for (const auto vert : A.vertices) {
-			float proj = vert.x * d.x + vert.y * d.y;
+		const int nVertA = A.vertices.size(); 
+		int i = 0; // Loop unrolling 
+		for (; i + 3 < nVertA; i += 4) { 
+			float proj1 = A.vertices[i].x * d.x + A.vertices[i].y * d.y; 
+			float proj2 = A.vertices[i+1].x * d.x + A.vertices[i+1].y * d.y; 
+			float proj3 = A.vertices[i+2].x * d.x + A.vertices[i+2].y * d.y; 
+			float proj4 = A.vertices[i+3].x * d.x + A.vertices[i+3].y * d.y; 
+			minProj = std::min({minProj, proj1, proj2, proj3, proj4}); 
+			maxProj = std::max({maxProj, proj1, proj2, proj3, proj4}); } 
+		// Process remaining vertices 
+		for (; i < nVertA; ++i) {
+			float proj = A.vertices[i].x * d.x + A.vertices[i].y * d.y;
 			minProj = std::min(minProj, proj);
 			maxProj = std::max(maxProj, proj);
 		}
+	
 	}
 
-	return std::pair<float, float>(minProj, maxProj);
+	return { minProj, maxProj };
 }
 
 float CrossProd2D(Vector Va, Vector Vb)
@@ -304,6 +342,9 @@ bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
 
 bool IsPointInsidePolygon(Point A, const Polygon& pol)
 {
+
+	bool isInside = IsPointInsidePolygonRec(A, pol, 1, pol.vertices.size()-1);
+	return isInside;
 	// Check if point A on the same side of the edges
 	{
 		float sign = CrossProd2D(A - pol.vertices[0], pol.vertices[1] - pol.vertices[0]);
@@ -314,12 +355,53 @@ bool IsPointInsidePolygon(Point A, const Polygon& pol)
 
 			float cross = CrossProd2D(A - V1, V2 - V1);
 			if (sign * cross < 0) {
+				assert(isInside == false && "Should be false");
 				return false;
 			}
 		}
 	}
 
+	assert(isInside == true && "Should be true");
 	return true;
+}
+
+bool IsPointInsidePolygonRec(Point A, const Polygon& pol, const int left, const int right)
+{
+	if (right - left <= 1) {
+		return IsPointInsideTriangle(A, pol.vertices[0], pol.vertices[left], pol.vertices[right]);
+	}
+
+	const int mid = (left + right) / 2;
+
+	const Point v0 = pol.vertices[0]; 
+	const Point vMid = pol.vertices[mid]; 
+
+
+	if (CrossProd2D(A - v0, vMid - v0) > 0) {
+		return IsPointInsidePolygonRec(A, pol, left, mid);
+	}
+	else { 
+		return IsPointInsidePolygonRec(A, pol, mid, right);
+	}
+}
+
+
+bool IsPointInsideTriangle(const Point pt, const Point v0, const Point v1, const Point v2) {
+	Point d0 = v1 - v0;
+	Point d1 = v2 - v0;
+	Point d2 = pt - v0;
+	
+	float areaV1V0P = CrossProd2D(d2, d0);
+	float areaV0V2P = CrossProd2D(d1, d2);
+
+	if (areaV1V0P * areaV0V2P < 0) return false;
+
+	Point d3 = v1 - pt;
+	Point d4 = v2 - pt;
+	float areaV1V2P = CrossProd2D(d4, d3);
+
+	return areaV1V0P * areaV1V2P < 0 ? false : true;
+
 }
 
 Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLmtPol)

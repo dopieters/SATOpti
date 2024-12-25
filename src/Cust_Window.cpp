@@ -1,4 +1,5 @@
 #include "Cust_Window.h"
+#include <cassert>
 
 #define W_WIDTH 680
 #define W_HEIGHT 420
@@ -58,6 +59,12 @@ void Cust_Window::Run()
 	m_isRunning = true;
 
 	MakePolygons();
+
+	Polygon test; test.vertices = { { 0, 0 }, { 1 , 0 }, { 0, 1 } };
+	bool insideTriangle = IsPointInsideTriangle({ 0.25,0.25 }, test.vertices[0], test.vertices[1], test.vertices[2]);
+	bool isnsidePol = IsPointInsidePolygon({ 0.25,0.25 }, test);
+
+	assert(insideTriangle == isnsidePol);
 	 
 	while (m_isRunning) {
 		SDL_RenderClear(m_renderer);

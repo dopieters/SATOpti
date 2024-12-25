@@ -83,5 +83,7 @@ bool SegmentIntersect(Point A, Point B, Point C, Point D);
 bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B);
 
 bool IsPointInsidePolygon(Point A, const Polygon& pol);
+bool IsPointInsidePolygonRec(Point A, const Polygon& pol, const int left, const int right );
+bool IsPointInsideTriangle(const Point A, const Vertex v0, const Vertex v1, const Vertex v2);
 
 Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLimit);

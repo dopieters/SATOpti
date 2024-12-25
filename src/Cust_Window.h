@@ -26,9 +26,14 @@ private:
 	const int nVertices = 10;
 	Polygon pol1;
 	Polygon pol2;
+
+	Polygon pol1Red;
+	Polygon pol2Red;
 	
 	void DrawPolygons();
 	void ProcessEvents();
+
+	void MakePolygons();
 
 	bool m_isPolIntersect = false;
 };

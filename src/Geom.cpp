@@ -2,6 +2,8 @@
 #include <random>
 #include <cassert> // assert
 #include <limits> // numeric_limits
+#include <iostream> // cout endl
+#include <functional>
 
 
 Vertex MakeRandomVertexPt() {
@@ -114,14 +116,20 @@ Polygon MakeConvexPol(int nVertices) {
 	std::sort(vecs.begin(), vecs.end(), CompareByAngle);
 
 	// Lay them end-to-end to form a polygon
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_real_distribution<> disCenter(-1.f, 1.f);
-	float polX = disCenter(gen), polY = disCenter(gen);
-	for (const auto& vec : vecs) {
-		polX += vec.x;
-		polY += vec.y;
-		pol.vertices.emplace_back(Vertex{polX, polY});
+	{
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<> disCenter(-1.f, 1.f);
+		float polX = disCenter(gen), polY = disCenter(gen);
+		pol.baryCenter = { 0.f, 0.f };
+		for (const auto& vec : vecs) {
+			polX += vec.x;
+			polY += vec.y;
+			pol.vertices.emplace_back(Vertex{ polX, polY });
+			pol.baryCenter += Vertex{ polX, polY };
+		}
+		// store baryCenter
+		pol.baryCenter = (1.f / vecs.size()) * pol.baryCenter;
 	}
 
 
@@ -132,8 +140,10 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 {
 	bool bInterBForce = PolygonsInterTestBForce(A, B);
 	bool bInterSAT = PolygonInterTestSAT(A, B);
+	bool bInterSATOpti = PolygonInterTestSATOpti(A, B);
 
 	assert(bInterBForce == bInterSAT && "Intersection tests disagree");
+	assert(bInterBForce == bInterSATOpti && "Intersection test disagree");
 
 	return bInterBForce;
 }
@@ -198,7 +208,6 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 	for (const Vector axis : axisToTestAgainst) {
 		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
 		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
-
 		if (AProj.first > BProj.second || AProj.second < BProj.first) {
 			return false;
 		}
@@ -208,6 +217,31 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 	return true;
 }
 
+bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
+{
+	
+	Vector barAxis = B.baryCenter - A.baryCenter;
+	barAxis = barAxis / barAxis.Mag();
+	
+	auto AProj = GetMinMaxPolygonProjAxis(A, barAxis);
+	auto BProj = GetMinMaxPolygonProjAxis(B, barAxis);
+
+
+	// check if this axis is not a separating axis
+	if (AProj.first > BProj.second || AProj.second < BProj.first) {
+		return false;
+	}
+
+	// compute reduced polygon
+	Polygon C = PolygonComputeReducePol(A, barAxis, BProj.first, true);
+	Polygon D = PolygonComputeReducePol(B, barAxis, AProj.second, false);
+
+
+
+	// return test on new polygon
+	return PolygonInterTestSAT(C, D);
+}
+
 std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
 {
 	float minProj = std::numeric_limits<float>::infinity();
@@ -215,8 +249,8 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
 
 	{
 		int nVertA = A.vertices.size();
-		for (int ii = 0; ii < nVertA; ++ii) {
-			float proj = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y;
+		for (const auto vert : A.vertices) {
+			float proj = vert.x * d.x + vert.y * d.y;
 			minProj = std::min(minProj, proj);
 			maxProj = std::max(maxProj, proj);
 		}
@@ -287,3 +321,49 @@ bool IsPointInsidePolygon(Point A, const Polygon& pol)
 
 	return true;
 }
+
+Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLmtPol)
+{
+	Polygon newPol;
+	{
+		auto getProjection = [&](int index) {
+			return A.vertices[index].x * axis.x + A.vertices[index].y * axis.y;
+			};
+
+		// Define the lambda 
+		using LimitCompFunc = std::function<bool(float)>; 
+		// Use the defined type for the ternary operator 
+		LimitCompFunc limitComp = isAbvLmtPol ?
+			static_cast<LimitCompFunc>([&](float proj) { return proj >= limit; }) :
+			static_cast<LimitCompFunc>([&](float proj) { return proj <= limit;});
+
+		const int nVertA = A.vertices.size();
+		for (int ii = 0; ii < nVertA; ++ii) {
+
+			{
+				const float proj = getProjection(ii);
+				if (limitComp(proj)) {
+					newPol.vertices.push_back(A.vertices[ii]);
+					continue;
+				}
+			}
+
+			const int prevInd = ii == 0 ? nVertA - 1 : (ii - 1);
+			const float projPrev = getProjection(prevInd);
+			if (limitComp(projPrev)) {
+				newPol.vertices.push_back(A.vertices[ii]);
+				continue;
+			}
+
+			const int nextInd = (ii + 1) % nVertA;
+			const float projNext = getProjection(nextInd);
+			if (limitComp(projNext)) {
+				newPol.vertices.push_back(A.vertices[ii]);
+				continue;
+			}
+
+		}
+	}
+	return newPol;
+}
+

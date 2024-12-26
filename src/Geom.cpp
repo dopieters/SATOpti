@@ -5,6 +5,7 @@
 #include <iostream> // cout endl
 #include <functional>
 #include <chrono>
+#include <future>
 
 
 
@@ -122,7 +123,7 @@ Polygon MakeConvexPol(int nVertices) {
 	{
 		std::random_device rd;
 		std::mt19937 gen(rd());
-		std::uniform_real_distribution<> disCenter(-1.f, 1.f);
+		std::uniform_real_distribution<> disCenter(-2.f, 2.f);
 		float polX = disCenter(gen), polY = disCenter(gen);
 		pol.baryCenter = { 0.f, 0.f };
 		for (const auto& vec : vecs) {
@@ -261,8 +262,14 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	
 
 	// compute reduced polygon
-	Polygon C = PolygonComputeReducePol(A, barAxis, BProj.first, true);
-	Polygon D = PolygonComputeReducePol(B, barAxis, AProj.second, false);
+	std::future<Polygon> resultC = std::async(std::launch::async, PolygonComputeReducePol, A, barAxis, BProj.first, true);
+	std::future<Polygon> resultD = std::async(std::launch::async, PolygonComputeReducePol, B, barAxis, AProj.second, false);
+	
+	Polygon C = resultC.get();
+	Polygon D = resultD.get();
+
+	//Polygon C = PolygonComputeReducePol(A, barAxis, BProj.first, true);
+	//Polygon D = PolygonComputeReducePol(B, barAxis, AProj.second, false);
 
 
 
@@ -277,17 +284,17 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
 
 	{
 		const int nVertA = A.vertices.size(); 
-		int i = 0; // Loop unrolling 
-		for (; i + 3 < nVertA; i += 4) { 
-			float proj1 = A.vertices[i].x * d.x + A.vertices[i].y * d.y; 
-			float proj2 = A.vertices[i+1].x * d.x + A.vertices[i+1].y * d.y; 
-			float proj3 = A.vertices[i+2].x * d.x + A.vertices[i+2].y * d.y; 
-			float proj4 = A.vertices[i+3].x * d.x + A.vertices[i+3].y * d.y; 
+		int ii = 0; // Loop unrolling 
+		for (; ii + 3 < nVertA; ii += 4) { 
+			const float proj1 = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y; 
+			const float proj2 = A.vertices[ii+1].x * d.x + A.vertices[ii+1].y * d.y; 
+			const float proj3 = A.vertices[ii+2].x * d.x + A.vertices[ii+2].y * d.y; 
+			const float proj4 = A.vertices[ii+3].x * d.x + A.vertices[ii+3].y * d.y; 
 			minProj = std::min({minProj, proj1, proj2, proj3, proj4}); 
 			maxProj = std::max({maxProj, proj1, proj2, proj3, proj4}); } 
 		// Process remaining vertices 
-		for (; i < nVertA; ++i) {
-			float proj = A.vertices[i].x * d.x + A.vertices[i].y * d.y;
+		for (; ii < nVertA; ++ii) {
+			const float proj = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y;
 			minProj = std::min(minProj, proj);
 			maxProj = std::max(maxProj, proj);
 		}
@@ -406,6 +413,8 @@ bool IsPointInsideTriangle(const Point pt, const Point v0, const Point v1, const
 
 Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLmtPol)
 {
+	if (A.vertices.size() == 3) return A;
+
 	Polygon newPol;
 	{
 		auto getProjection = [&](int index) {

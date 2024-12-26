@@ -23,7 +23,7 @@ private:
 	bool m_isValid = false;
 	bool m_isRunning = false;
 
-	const int nVertices = 1000;
+	const int nVertices = 3;
 	Polygon pol1;
 	Polygon pol2;
 

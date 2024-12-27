@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include <iostream> // cin, cout
-#include "Cust_Window.h"
+#include "DebugMode.h"
 
 
 #undef main
@@ -12,7 +12,7 @@ void ClearTerminal() {
 }
 
 void RunDebugMode() {
-	Cust_Window wnd;
+	DebugMode wnd;
 	if (wnd.IsValid()) {
 		wnd.Run();
 	}

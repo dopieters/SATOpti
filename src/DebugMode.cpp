@@ -1,13 +1,13 @@
-#include "Cust_Window.h"
+#include "DebugMode.h"
 #include <cassert>
 
 #define W_WIDTH 680
 #define W_HEIGHT 420
-#define SCALE 75
+#define SCALE 50
 
 
 
-Cust_Window::Cust_Window():
+DebugMode::DebugMode():
 	m_window(nullptr), m_renderer(nullptr), m_isValid(false)
 {
 
@@ -43,7 +43,7 @@ Cust_Window::Cust_Window():
 	m_isValid = true;
 }
 
-Cust_Window::~Cust_Window()
+DebugMode::~DebugMode()
 {
 	if (!m_isValid) return;
 
@@ -57,7 +57,7 @@ Cust_Window::~Cust_Window()
 	m_window = nullptr;
 }
 
-void Cust_Window::Run()
+void DebugMode::Run()
 {
 	m_isRunning = true;
 	PrintCommand();
@@ -82,7 +82,7 @@ void Cust_Window::Run()
 
 
 
-void Cust_Window::DrawPolygons()
+void DebugMode::DrawPolygons()
 {
 
 	if (!m_isPolIntersect)
@@ -220,7 +220,7 @@ void Cust_Window::DrawPolygons()
 
 }
 
-void Cust_Window::PrintCommand()
+void DebugMode::PrintCommand()
 {
 	// clear terminal
 	std::cout << "\x1B[2J\x1B[H"; // ANSI escape code
@@ -235,7 +235,7 @@ void Cust_Window::PrintCommand()
 
 }
 
-void Cust_Window::ProcessEvents()
+void DebugMode::ProcessEvents()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -278,7 +278,7 @@ void Cust_Window::ProcessEvents()
 	}
 }
 
-void Cust_Window::MakePolygons()
+void DebugMode::MakePolygons()
 {
 	PrintCommand();
 

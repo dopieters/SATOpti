@@ -140,24 +140,22 @@ Polygon MakeConvexPol(int nVertices) {
 	return pol;
 }
 
-template <typename Func> void measureExecutionTime(Func func, const std::string& funcName, Polygon A, Polygon B) {
+template <typename Func> 
+bool measureExecutionTime(Func func, const std::string& funcName, Polygon A, Polygon B) {
 	auto start = std::chrono::high_resolution_clock::now(); 
-	func(A, B); 
+	bool isIntersect = func(A, B); 
 	auto end = std::chrono::high_resolution_clock::now(); 
 	std::chrono::duration<double, std::milli> duration = end - start; 
 	std::cout << funcName << " took " << duration.count() << " ms\n"; 
+	return isIntersect;
 }
 
 bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 {
-
-	bool bInterBForce = PolygonsInterTestBForce(A, B);
-	bool bInterSAT = PolygonInterTestSAT(A, B);
-	bool bInterSATOpti = PolygonInterTestSATOpti(A, B);
-
-	measureExecutionTime(PolygonsInterTestBForce, "Brute force", A, B);
-	measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
-	measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
+	
+	bool bInterBForce = measureExecutionTime(PolygonsInterTestBForce, "Brute force", A, B);
+	bool bInterSAT = measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
+	bool bInterSATOpti = measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
 
 
 	if (bInterBForce != bInterSATOpti) {
@@ -250,9 +248,10 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	auto BProj = GetMinMaxPolygonProjAxis(B, barAxis);
 
 	// check if barycenter inside each other
-	if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
+	// commented because it makes the comparison with the other SAT method unfair
+	/*if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
 		return true;
-	}
+	}*/
 
 	// check if this axis is not a separating axis
 	if (AProj.first > BProj.second || AProj.second < BProj.first) {
@@ -416,43 +415,33 @@ Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float
 	if (A.vertices.size() == 3) return A;
 
 	Polygon newPol;
+	newPol.vertices.reserve(A.vertices.size());
 	{
-		auto getProjection = [&](int index) {
-			return A.vertices[index].x * axis.x + A.vertices[index].y * axis.y;
-			};
-
 		// Define the lambda 
 		using LimitCompFunc = std::function<bool(float)>; 
 		// Use the defined type for the ternary operator 
 		LimitCompFunc limitComp = isAbvLmtPol ?
-			static_cast<LimitCompFunc>([&](float proj) { return proj >= limit; }) :
-			static_cast<LimitCompFunc>([&](float proj) { return proj <= limit;});
+			LimitCompFunc([&](float proj) { return proj >= limit; }) :
+			LimitCompFunc([&](float proj) { return proj <= limit;});
 
 		const int nVertA = A.vertices.size();
+
+		const float projPrev = A.vertices[nVertA - 1].x * axis.x + A.vertices[nVertA - 1].y * axis.y;
+		bool isPrevProjValid = limitComp(projPrev);
+		const float proj = A.vertices[0].x * axis.x + A.vertices[0].y * axis.y;
+		bool isProjValid = limitComp(proj);
 		for (int ii = 0; ii < nVertA; ++ii) {
 
 			{
-				const float proj = getProjection(ii);
-				if (limitComp(proj)) {
+				const int nextInd = (ii + 1) % nVertA;
+				const float projNext = A.vertices[nextInd].x * axis.x + A.vertices[nextInd].y * axis.y;
+				const bool isNextProjValid = limitComp(projNext);
+				if (isPrevProjValid || isProjValid || isNextProjValid) {
 					newPol.vertices.push_back(A.vertices[ii]);
-					continue;
 				}
+				isPrevProjValid = isProjValid;
+				isProjValid = isNextProjValid;
 			}
-
-			const int prevInd = ii == 0 ? nVertA - 1 : (ii - 1);
-			const float projPrev = getProjection(prevInd);
-			if (limitComp(projPrev)) {
-				newPol.vertices.push_back(A.vertices[ii]);
-				continue;
-			}
-
-			const int nextInd = (ii + 1) % nVertA;
-			const float projNext = getProjection(nextInd);
-			if (limitComp(projNext)) {
-				newPol.vertices.push_back(A.vertices[ii]);
-				continue;
-			}
-
 		}
 	}
 	return newPol;

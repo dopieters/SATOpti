@@ -6,11 +6,11 @@
 
 struct Polygon;
 
-class Cust_Window
+class DebugMode
 {
 public:
-	Cust_Window();
-	~Cust_Window();
+	DebugMode();
+	~DebugMode();
 
 	// main function to run the debug mode
 	void Run();
@@ -34,7 +34,7 @@ private:
 	bool m_isPolIntersect = false;
 
 	// Number of vertices for the convex polygons
-	int nVertices = 3;
+	int nVertices = 100;
 	
 	// false hide min pol
 	// true show min pol

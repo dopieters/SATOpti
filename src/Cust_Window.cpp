@@ -39,7 +39,7 @@ Cust_Window::Cust_Window():
 		return;
 	}
 
-	
+	// properly managed to allocate needed memory
 	m_isValid = true;
 }
 
@@ -52,39 +52,39 @@ Cust_Window::~Cust_Window()
 	SDL_DestroyRenderer(m_renderer);
 	SDL_DestroyWindow(m_window);
 	SDL_Quit();
+
+	m_renderer = nullptr;
+	m_window = nullptr;
 }
 
 void Cust_Window::Run()
 {
 	m_isRunning = true;
+	PrintCommand();
 
 	MakePolygons();
-
-	Polygon test; test.vertices = { { 0, 0 }, { 1 , 0 }, { 0, 1 } };
-	bool insideTriangle = IsPointInsideTriangle({ 0.25,0.25 }, test.vertices[0], test.vertices[1], test.vertices[2]);
-	bool isnsidePol = IsPointInsidePolygon({ 0.25,0.25 }, test);
-
-	assert(insideTriangle == isnsidePol);
 	 
 	while (m_isRunning) {
 		SDL_RenderClear(m_renderer);
 		ProcessEvents();
 
+		// black background
 		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 		SDL_RenderClear(m_renderer);
 
+		// draw polygons
 		DrawPolygons();
-		//SDL_RenderDrawLines // for drawing polygon
 
 		// Present the backbuffer
 		SDL_RenderPresent(m_renderer);
-
 	}
 }
 
+
+
 void Cust_Window::DrawPolygons()
 {
-	m_isPolIntersect = false;
+
 	if (!m_isPolIntersect)
 		SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
 	else
@@ -92,14 +92,14 @@ void Cust_Window::DrawPolygons()
 
 	const float shiftX = W_WIDTH / 2;
 	const float shiftY = W_HEIGHT / 2;
-	for (int ii = 0; ii < nVertices - 1; ++ii) {
+	for (int ii = 0; ii < pol1.vertices.size() - 1; ++ii) {
 		SDL_RenderDrawLine(m_renderer, pol1.vertices[ii].x * SCALE + shiftX,
 			pol1.vertices[ii].y * SCALE + shiftY,
 			pol1.vertices[ii + 1].x * SCALE + shiftX,
 			pol1.vertices[ii + 1].y * SCALE + shiftY);
 	}
-	SDL_RenderDrawLine(m_renderer, pol1.vertices[nVertices - 1].x * SCALE + shiftX,
-		pol1.vertices[nVertices - 1].y * SCALE + shiftY,
+	SDL_RenderDrawLine(m_renderer, pol1.vertices[pol1.vertices.size() - 1].x * SCALE + shiftX,
+		pol1.vertices[pol1.vertices.size() - 1].y * SCALE + shiftY,
 		pol1.vertices[0].x * SCALE + shiftX,
 		pol1.vertices[0].y * SCALE + shiftY);
 
@@ -107,109 +107,131 @@ void Cust_Window::DrawPolygons()
 		SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
 
 
-	for (int ii = 0; ii < nVertices - 1; ++ii) {
+	for (int ii = 0; ii < pol2.vertices.size() - 1; ++ii) {
 		SDL_RenderDrawLine(m_renderer, pol2.vertices[ii].x * SCALE + shiftX,
 			pol2.vertices[ii].y * SCALE + shiftY,
 			pol2.vertices[ii + 1].x * SCALE + shiftX,
 			pol2.vertices[ii + 1].y * SCALE + shiftY);
 	}
-	SDL_RenderDrawLine(m_renderer, pol2.vertices[nVertices - 1].x * SCALE + shiftX,
-		pol2.vertices[nVertices - 1].y * SCALE + shiftY,
+	SDL_RenderDrawLine(m_renderer, pol2.vertices[pol2.vertices.size() - 1].x * SCALE + shiftX,
+		pol2.vertices[pol2.vertices.size() - 1].y * SCALE + shiftY,
 		pol2.vertices[0].x * SCALE + shiftX,
 		pol2.vertices[0].y * SCALE + shiftY);
 
 	
-	SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 255);
-	SDL_RenderDrawLine(m_renderer, pol1.baryCenter.x * SCALE + shiftX,
-		pol1.baryCenter.y * SCALE + shiftY,
-		pol2.baryCenter.x * SCALE + shiftX,
-		pol2.baryCenter.y * SCALE + shiftY);
-
-
-	SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
-	Vector barAxis = pol2.baryCenter - pol1.baryCenter;
-	barAxis = barAxis / barAxis.Mag();
-
-	auto pol1Proj = GetMinMaxPolygonProjAxis(pol1, barAxis);
-	auto pol2Proj = GetMinMaxPolygonProjAxis(pol2, barAxis);
-
-	Vector barAxisPerp = { -barAxis.y, barAxis.x };
-
-	Point Amax = pol1Proj.second * barAxis;// +pol1.baryCenter;
-	Point A1 = Amax + 100 * barAxisPerp;
-	Point A2 = Amax - 100 * barAxisPerp;
-
-	// first plane
-	SDL_RenderDrawLine(m_renderer, A1.x * SCALE + shiftX,
-		A1.y * SCALE + shiftY,
-		A2.x * SCALE + shiftX,
-		A2.y * SCALE + shiftY);
-
-	Point Amin = pol1Proj.first * barAxis;// +pol1.baryCenter;
-	A1 = Amin + 100 * barAxisPerp;
-	A2 = Amin - 100 * barAxisPerp;
-
-	// first plane
-	SDL_RenderDrawLine(m_renderer, A1.x * SCALE + shiftX,
-		A1.y * SCALE + shiftY,
-		A2.x * SCALE + shiftX,
-		A2.y * SCALE + shiftY);
-
-	SDL_SetRenderDrawColor(m_renderer, 0, 255,0, 255);
-
-	Point Bmin = pol2Proj.first * barAxis;
-	Point B1 = Bmin + 100 * barAxisPerp;
-	Point B2 = Bmin - 100 * barAxisPerp;
-
-	// first plane
-	SDL_RenderDrawLine(m_renderer, B1.x * SCALE + shiftX,
-		B1.y * SCALE + shiftY,
-		B2.x * SCALE + shiftX,
-		B2.y * SCALE + shiftY);
-
-	Point Bmax = pol2Proj.second * barAxis;
-	B1 = Bmax+ 100 * barAxisPerp;
-	B2 = Bmax - 100 * barAxisPerp;
-
-	SDL_RenderDrawLine(m_renderer, B1.x * SCALE + shiftX,
-		B1.y * SCALE + shiftY,
-		B2.x * SCALE + shiftX,
-		B2.y * SCALE + shiftY);
+	
 	
 
-
-	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-	if (pol1Red.vertices.size() > 0)
+	if (m_isShowMinPol)
 	{
-		for (int ii = 0; ii < pol1Red.vertices.size() - 1; ++ii) {
-			SDL_RenderDrawLine(m_renderer, pol1Red.vertices[ii].x * SCALE + shiftX,
-				pol1Red.vertices[ii].y * SCALE + shiftY,
-				pol1Red.vertices[ii + 1].x * SCALE + shiftX,
-				pol1Red.vertices[ii + 1].y * SCALE + shiftY);
+		SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+		if (pol1Red.vertices.size() > 0)
+		{
+			for (int ii = 0; ii < pol1Red.vertices.size() - 1; ++ii) {
+				SDL_RenderDrawLine(m_renderer, pol1Red.vertices[ii].x * SCALE + shiftX,
+					pol1Red.vertices[ii].y * SCALE + shiftY,
+					pol1Red.vertices[ii + 1].x * SCALE + shiftX,
+					pol1Red.vertices[ii + 1].y * SCALE + shiftY);
+			}
+			SDL_RenderDrawLine(m_renderer, pol1Red.vertices[pol1Red.vertices.size() - 1].x * SCALE + shiftX,
+				pol1Red.vertices[pol1Red.vertices.size() - 1].y * SCALE + shiftY,
+				pol1Red.vertices[0].x * SCALE + shiftX,
+				pol1Red.vertices[0].y * SCALE + shiftY);
 		}
-		SDL_RenderDrawLine(m_renderer, pol1Red.vertices[pol1Red.vertices.size() - 1].x * SCALE + shiftX,
-			pol1Red.vertices[pol1Red.vertices.size() - 1].y * SCALE + shiftY,
-			pol1Red.vertices[0].x * SCALE + shiftX,
-			pol1Red.vertices[0].y * SCALE + shiftY);
-	}
 
-	if (pol2Red.vertices.size() > 0)
-	{
+		if (pol2Red.vertices.size() > 0)
+		{
 
-		for (int ii = 0; ii < pol2Red.vertices.size() - 1; ++ii) {
-			SDL_RenderDrawLine(m_renderer, pol2Red.vertices[ii].x * SCALE + shiftX,
-				pol2Red.vertices[ii].y * SCALE + shiftY,
-				pol2Red.vertices[ii + 1].x * SCALE + shiftX,
-				pol2Red.vertices[ii + 1].y * SCALE + shiftY);
+			for (int ii = 0; ii < pol2Red.vertices.size() - 1; ++ii) {
+				SDL_RenderDrawLine(m_renderer, pol2Red.vertices[ii].x * SCALE + shiftX,
+					pol2Red.vertices[ii].y * SCALE + shiftY,
+					pol2Red.vertices[ii + 1].x * SCALE + shiftX,
+					pol2Red.vertices[ii + 1].y * SCALE + shiftY);
+			}
+			SDL_RenderDrawLine(m_renderer, pol2Red.vertices[pol2Red.vertices.size() - 1].x * SCALE + shiftX,
+				pol2Red.vertices[pol2Red.vertices.size() - 1].y * SCALE + shiftY,
+				pol2Red.vertices[0].x * SCALE + shiftX,
+				pol2Red.vertices[0].y * SCALE + shiftY);
 		}
-		SDL_RenderDrawLine(m_renderer, pol2Red.vertices[pol2Red.vertices.size() - 1].x * SCALE + shiftX,
-			pol2Red.vertices[pol2Red.vertices.size() - 1].y * SCALE + shiftY,
-			pol2Red.vertices[0].x * SCALE + shiftX,
-			pol2Red.vertices[0].y * SCALE + shiftY);
+
+		if (m_isShowMinPolDebug) {
+			SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 255);
+			SDL_RenderDrawLine(m_renderer, pol1.baryCenter.x * SCALE + shiftX,
+				pol1.baryCenter.y * SCALE + shiftY,
+				pol2.baryCenter.x * SCALE + shiftX,
+				pol2.baryCenter.y * SCALE + shiftY);
+
+
+			SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
+			Vector barAxis = pol2.baryCenter - pol1.baryCenter;
+			barAxis = barAxis / barAxis.Mag();
+
+			auto pol1Proj = GetMinMaxPolygonProjAxis(pol1, barAxis);
+			auto pol2Proj = GetMinMaxPolygonProjAxis(pol2, barAxis);
+
+			Vector barAxisPerp = { -barAxis.y, barAxis.x };
+
+			Point Amax = pol1Proj.second * barAxis;
+			Point A1 = Amax + 100 * barAxisPerp;
+			Point A2 = Amax - 100 * barAxisPerp;
+
+			// first plane
+			SDL_RenderDrawLine(m_renderer, A1.x * SCALE + shiftX,
+				A1.y * SCALE + shiftY,
+				A2.x * SCALE + shiftX,
+				A2.y * SCALE + shiftY);
+
+			Point Amin = pol1Proj.first * barAxis;
+			A1 = Amin + 100 * barAxisPerp;
+			A2 = Amin - 100 * barAxisPerp;
+
+			// first plane
+			SDL_RenderDrawLine(m_renderer, A1.x * SCALE + shiftX,
+				A1.y * SCALE + shiftY,
+				A2.x * SCALE + shiftX,
+				A2.y * SCALE + shiftY);
+
+			SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
+
+			Point Bmin = pol2Proj.first * barAxis;
+			Point B1 = Bmin + 100 * barAxisPerp;
+			Point B2 = Bmin - 100 * barAxisPerp;
+
+			// second plane
+			SDL_RenderDrawLine(m_renderer, B1.x * SCALE + shiftX,
+				B1.y * SCALE + shiftY,
+				B2.x * SCALE + shiftX,
+				B2.y * SCALE + shiftY);
+
+			Point Bmax = pol2Proj.second * barAxis;
+			B1 = Bmax + 100 * barAxisPerp;
+			B2 = Bmax - 100 * barAxisPerp;
+
+			SDL_RenderDrawLine(m_renderer, B1.x * SCALE + shiftX,
+				B1.y * SCALE + shiftY,
+				B2.x * SCALE + shiftX,
+				B2.y * SCALE + shiftY);
+		}
+
 	}
 
 
 	
+
+}
+
+void Cust_Window::PrintCommand()
+{
+	// clear terminal
+	std::cout << "\x1B[2J\x1B[H"; // ANSI escape code
+
+	std::cout << "COMMAND \n";
+	std::cout << "ENTER : Generate new polygon \n";
+	std::cout << "BACKSPACE : Back to main menu \n";
+	std::cout << "+ : Increase the number of vertex (Need to be re-generated) \n";
+	std::cout << "- : Decrease the number of vertex (the minimum is 3 vertices) \n";
+	std::cout << "m : toggle min polygon view \n";
+	std::cout << "d : toggle min pol debug helper (min polygon view need to be on) \n";
 
 }
 
@@ -218,14 +240,39 @@ void Cust_Window::ProcessEvents()
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-
 		if (event.type == SDL_QUIT)
 		{
 			m_isRunning = false;
 		}
 		else if (event.type == SDL_KEYDOWN) {
-			if (event.key.keysym.sym == SDLK_RETURN) {
+			switch (event.key.keysym.sym)
+			{
+			case SDLK_RETURN:
 				MakePolygons();
+				break;
+			case SDLK_BACKSPACE:
+				m_isRunning = false;
+				break;
+			case SDLK_PLUS:
+				++nVertices;
+				break;
+			case SDLK_MINUS:
+				--nVertices;
+				nVertices = std::max(3, nVertices);
+				break;
+			
+			case SDLK_SEMICOLON: // For my own keyboard layout
+				if ((SDL_GetModState() & KMOD_SHIFT)) {
+					++nVertices;
+				}
+				break;
+			case SDLK_m:
+				m_isShowMinPol = !m_isShowMinPol;
+				break;
+			case SDLK_d:
+				m_isShowMinPolDebug = !m_isShowMinPolDebug;
+			default:
+				break;
 			}
 		}
 	}
@@ -233,6 +280,8 @@ void Cust_Window::ProcessEvents()
 
 void Cust_Window::MakePolygons()
 {
+	PrintCommand();
+
 	pol1.vertices.clear();
 	pol2.vertices.clear();
 	pol1Red.vertices.clear();
@@ -258,4 +307,6 @@ void Cust_Window::MakePolygons()
 	pol1Red = PolygonComputeReducePol(pol1, barAxis, BProj.first, true);
 	pol2Red = PolygonComputeReducePol(pol2, barAxis, AProj.second, false);
 
+
+	
 }

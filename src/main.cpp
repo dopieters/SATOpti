@@ -1,15 +1,11 @@
 #include <SDL2/SDL.h>
 #include <iostream>
-
-#include <iostream> // cin, cout
 #include "DebugMode.h"
+#include "Utilities.h"
 
 
 #undef main
 
-void ClearTerminal() {
-	std::cout << "\x1B[2J\x1B[H"; // ANSI escape code
-}
 
 void RunDebugMode() {
 	DebugMode db;

@@ -43,6 +43,8 @@ private:
 
 
 	void DrawPolygons();
+	void DrawPolygon(const Polygon& A);
+	void DrawHyperPlanes(const Vector v, const float min, const float max);
 
 	// Printout the different commands
 	void PrintCommand();

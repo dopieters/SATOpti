@@ -1,11 +1,13 @@
-#include "Geom.h"
 #include <random>
 #include <cassert> // assert
 #include <limits> // numeric_limits
-#include <iostream> // cout endl
 #include <functional>
-#include <chrono>
 #include <future>
+
+#include "Geom.h"
+#include "Utilities.h"
+
+
 
 
 
@@ -27,7 +29,6 @@ bool CompareByAngle(const Vertex& a, const Vertex& b)
 
 Polygon MakeConvexPol(int nVertices) {
 	assert(nVertices >= 3 && "A minimum of 3 vertices is needed");
-	srand(unsigned(time(NULL)));
 
 	const int nVert = std::max(nVertices, 3);
 
@@ -140,15 +141,6 @@ Polygon MakeConvexPol(int nVertices) {
 	return pol;
 }
 
-template <typename Func> 
-bool measureExecutionTime(Func func, const std::string& funcName, Polygon A, Polygon B) {
-	auto start = std::chrono::high_resolution_clock::now(); 
-	bool isIntersect = func(A, B); 
-	auto end = std::chrono::high_resolution_clock::now(); 
-	std::chrono::duration<double, std::milli> duration = end - start; 
-	std::cout << funcName << " took " << duration.count() << " ms\n"; 
-	return isIntersect;
-}
 
 bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 {
@@ -157,13 +149,9 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 	bool bInterSAT = measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
 	bool bInterSATOpti = measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
 
+	assert(bInterBForce == bInterSAT & "Brut force and SAT test should agree with each other");
+	assert(bInterBForce == bInterSAT & "Brut force and SAT Opti test should agree with each other");
 
-	if (bInterBForce != bInterSATOpti) {
-		std::cout << "brut force && satOpti disagree" << std::endl;
-		if (bInterBForce) {
-			std::cout << "brute force say intersection" << std::endl;
-		}
-	}
 
 	return bInterBForce;
 }
@@ -258,19 +246,12 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 		return false;
 	}
 
-	
-
 	// compute reduced polygon
 	std::future<Polygon> resultC = std::async(std::launch::async, PolygonComputeReducePol, A, barAxis, BProj.first, true);
 	std::future<Polygon> resultD = std::async(std::launch::async, PolygonComputeReducePol, B, barAxis, AProj.second, false);
 	
 	Polygon C = resultC.get();
 	Polygon D = resultD.get();
-
-	//Polygon C = PolygonComputeReducePol(A, barAxis, BProj.first, true);
-	//Polygon D = PolygonComputeReducePol(B, barAxis, AProj.second, false);
-
-
 
 	// return test on new polygon
 	return PolygonInterTestSAT(C, D);

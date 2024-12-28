@@ -30,7 +30,7 @@ struct Point{
 		return { x * scalar, y * scalar };
 	}
 
-	friend Point operator* (const float scalar, const Point pt) {
+	friend Point operator* (const float scalar, const Point pt){
 		return { pt.x * scalar, pt.y * scalar };
 	}
 
@@ -38,12 +38,12 @@ struct Point{
 		return { x / scalar, y / scalar };
 	}
 
-	friend Point operator/ (const float scalar, const Point pt) {
+	friend Point operator/ (const float scalar, const Point pt){
 		return { pt.x / scalar, pt.y / scalar };
 	}
 
 
-	float Mag() {
+	float Mag() const{
 		return std::sqrt(x * x + y * y);
 	}
 };

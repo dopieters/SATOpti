@@ -42,12 +42,12 @@ private:
 	bool m_isShowMinPolDebug = false;
 
 
-	void DrawPolygons();
-	void DrawPolygon(const Polygon& A);
-	void DrawHyperPlanes(const Vector v, const float min, const float max);
+	void DrawPolygons() const;
+	void DrawPolygon(const Polygon& A) const;
+	void DrawHyperPlanes(const Vector v, const float min, const float max) const;
 
 	// Printout the different commands
-	void PrintCommand();
+	void PrintCommand() const;
 	void ProcessEvents();
 
 	void MakePolygons();

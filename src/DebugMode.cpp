@@ -1,12 +1,9 @@
 #include "DebugMode.h"
 #include <cassert>
-#include "Utilities.h"
 
-#define W_WIDTH 680
-#define W_HEIGHT 420
-#define SCALE 50
-#define SHIFTX W_WIDTH/2
-#define SHIFTY W_HEIGHT/2
+#include "Utilities.h"
+#include "Params.h"
+
 
 
 
@@ -41,6 +38,9 @@ DebugMode::DebugMode():
 		SDL_Quit();
 		return;
 	}
+
+	// init seed
+	srand(RDN_SEED);
 
 	// properly managed to allocate needed memory
 	m_isValid = true;
@@ -85,7 +85,7 @@ void DebugMode::Run()
 
 
 
-void DebugMode::DrawPolygons()
+void DebugMode::DrawPolygons() const
 {
 	// Set polygon 1 edges draw color
 	if (!m_isPolIntersect)
@@ -112,10 +112,10 @@ void DebugMode::DrawPolygons()
 
 			// Draw barycenter to barycenter line
 			SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 255);
-			SDL_RenderDrawLine(m_renderer, pol1.baryCenter.x * SCALE + SHIFTX,
-				pol1.baryCenter.y * SCALE + SHIFTY,
-				pol2.baryCenter.x * SCALE + SHIFTX,
-				pol2.baryCenter.y * SCALE + SHIFTY);
+			SDL_RenderDrawLine(m_renderer, pol1.baryCenter.x * DRAW_SCALE + SHIFTX,
+				pol1.baryCenter.y * DRAW_SCALE + SHIFTY,
+				pol2.baryCenter.x * DRAW_SCALE + SHIFTX,
+				pol2.baryCenter.y * DRAW_SCALE + SHIFTY);
 			
 			Vector barAxis = pol2.baryCenter - pol1.baryCenter;
 			barAxis = barAxis / barAxis.Mag();
@@ -136,7 +136,7 @@ void DebugMode::DrawPolygons()
 
 }
 
-void DebugMode::DrawPolygon(const Polygon& A)
+void DebugMode::DrawPolygon(const Polygon& A) const
 {
 	const int nVert = A.vertices.size();
 
@@ -144,19 +144,19 @@ void DebugMode::DrawPolygon(const Polygon& A)
 
 
 	for (int ii = 0; ii < nVert - 1; ++ii) {
-		SDL_RenderDrawLine(m_renderer, A.vertices[ii].x * SCALE + SHIFTX,
-			A.vertices[ii].y * SCALE + SHIFTY,
-			A.vertices[ii + 1].x * SCALE + SHIFTX,
-			A.vertices[ii + 1].y * SCALE + SHIFTY);
+		SDL_RenderDrawLine(m_renderer, A.vertices[ii].x * DRAW_SCALE + SHIFTX,
+			A.vertices[ii].y * DRAW_SCALE + SHIFTY,
+			A.vertices[ii + 1].x * DRAW_SCALE + SHIFTX,
+			A.vertices[ii + 1].y * DRAW_SCALE + SHIFTY);
 	}
-	SDL_RenderDrawLine(m_renderer, A.vertices[nVert - 1].x * SCALE + SHIFTX,
-		A.vertices[nVert - 1].y * SCALE + SHIFTY,
-		A.vertices[0].x * SCALE + SHIFTX,
-		A.vertices[0].y * SCALE + SHIFTY);
+	SDL_RenderDrawLine(m_renderer, A.vertices[nVert - 1].x * DRAW_SCALE + SHIFTX,
+		A.vertices[nVert - 1].y * DRAW_SCALE + SHIFTY,
+		A.vertices[0].x * DRAW_SCALE + SHIFTX,
+		A.vertices[0].y * DRAW_SCALE + SHIFTY);
 
 }
 
-void DebugMode::DrawHyperPlanes(const Vector v, const float min, const float max)
+void DebugMode::DrawHyperPlanes(const Vector v, const float min, const float max) const
 {
 	Vector barAxisPerp = { -v.y, v.x };
 
@@ -165,26 +165,26 @@ void DebugMode::DrawHyperPlanes(const Vector v, const float min, const float max
 	Point P2 = Pmax - 100 * barAxisPerp;
 
 	// first plane
-	SDL_RenderDrawLine(m_renderer, P1.x * SCALE + SHIFTX,
-		P1.y * SCALE + SHIFTY,
-		P2.x * SCALE + SHIFTX,
-		P2.y * SCALE + SHIFTY);
+	SDL_RenderDrawLine(m_renderer, P1.x * DRAW_SCALE + SHIFTX,
+		P1.y * DRAW_SCALE + SHIFTY,
+		P2.x * DRAW_SCALE + SHIFTX,
+		P2.y * DRAW_SCALE + SHIFTY);
 
 	Point Pmin = min * v;
 	P1 = Pmin + 100 * barAxisPerp;
 	P2 = Pmin - 100 * barAxisPerp;
 
 	// first plane
-	SDL_RenderDrawLine(m_renderer, P1.x * SCALE + SHIFTX,
-		P1.y * SCALE + SHIFTY,
-		P2.x * SCALE + SHIFTX,
-		P2.y * SCALE + SHIFTY);
+	SDL_RenderDrawLine(m_renderer, P1.x * DRAW_SCALE + SHIFTX,
+		P1.y * DRAW_SCALE + SHIFTY,
+		P2.x * DRAW_SCALE + SHIFTX,
+		P2.y * DRAW_SCALE + SHIFTY);
 
 
 
 }
 
-void DebugMode::PrintCommand()
+void DebugMode::PrintCommand() const
 {
 	ClearTerminal();
 

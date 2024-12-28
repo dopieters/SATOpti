@@ -12,9 +12,9 @@ void ClearTerminal() {
 }
 
 void RunDebugMode() {
-	DebugMode wnd;
-	if (wnd.IsValid()) {
-		wnd.Run();
+	DebugMode db;
+	if (db.IsValid()) {
+		db.Run();
 	}
 }
 

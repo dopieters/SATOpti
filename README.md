@@ -8,6 +8,7 @@ The basic idea behind this algorithm is simple: if there exists an axis along wh
 
 Many resources I found online suggest testing against all the edges, but this is not always necessary. Depending on the position and shape of the polygons, the test can be done against a reduced set of axes, which simplifies the calculation.
 For example, in the image below, only the normals of the white edges need to be tested, while the normals of the red edges can be ignored.
+
 ![Screenshot](images/PolIntersection.png)
 
 This project has the goal of comparing the traditional SAT test with the new one.

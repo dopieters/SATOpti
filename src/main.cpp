@@ -2,6 +2,7 @@
 #include <iostream>
 #include "DebugMode.h"
 #include "Utilities.h"
+#include "PerfTest.h"
 
 
 #undef main
@@ -15,7 +16,12 @@ void RunDebugMode() {
 }
 
 void RunPerfComp() {
+	PerfTest test(100, {10, 100, 500});
+	test.Run();
 
+
+	std::cout << "Press Enter to continue..." << std::endl;
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 int main(int argc, char* argv[])

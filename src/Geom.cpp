@@ -195,6 +195,7 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
+#if 1
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
 
@@ -227,6 +228,45 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 	}
 
 	return true;
+
+#else 
+
+	auto isSeparatingAxis = [&](const Vector axis) -> bool {
+		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
+		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
+		if (AProj.first > BProj.second || AProj.second < BProj.first) {
+			return true;
+		}
+
+		return false;
+		};
+
+	// A's axes
+	{
+		int nVertA = A.vertices.size();
+		int ii = 0;
+		for (; ii < nVertA -1 ; ++ii) {
+			const Vector edgeVec = A.vertices[ii] - A.vertices[ii + 1];
+			if (isSeparatingAxis(edgeVec)) return false;
+		}
+		const Vector edgeVec = A.vertices[ii] - A.vertices[0];
+		if (isSeparatingAxis(edgeVec)) return false;
+	}
+
+	// B's axes
+	{
+		int nVertB = B.vertices.size();
+		int ii = 0;
+		for (; ii < nVertB - 1; ++ii) {
+			const Vector edgeVec = B.vertices[ii] - B.vertices[ii + 1];
+			if (isSeparatingAxis(edgeVec)) return false;
+		}
+		const Vector edgeVec = B.vertices[ii] - B.vertices[0];
+		if (isSeparatingAxis(edgeVec)) return false;
+	}
+
+	return true;
+#endif
 }
 
 

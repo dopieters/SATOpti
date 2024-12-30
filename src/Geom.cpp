@@ -10,12 +10,10 @@
 
 
 
-
-
 Vertex MakeRandomVertexPt() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<> dis(0.0, 1.0);
+	std::uniform_real_distribution<float> dis(0.0, 1.0);
 
 	Vertex pt = { dis(gen), dis(gen) };
 	return pt;
@@ -144,7 +142,8 @@ Polygon MakeConvexPol(int nVertices) {
 
 bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 {
-	
+	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+
 	bool bInterBForce = measureExecutionTime(PolygonsInterTestBForce, "Brute force", A, B);
 	bool bInterSAT = measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
 	bool bInterSATOpti = measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
@@ -158,6 +157,9 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 
 bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B)
 {
+
+	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+
 	// Test if edges intersects
 	{
 		const int nAVert = A.vertices.size();
@@ -191,6 +193,8 @@ bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B)
 
 bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 {
+	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
 
@@ -228,7 +232,8 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 
 bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 {
-	
+	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+
 	Vector barAxis = B.baryCenter - A.baryCenter;
 
 	auto aMax = GetMaxPolygonProjAxis(A, barAxis);
@@ -258,6 +263,8 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 
 std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector d)
 {
+	assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
+
 	float minProj = std::numeric_limits<float>::infinity();
 	float maxProj = - std::numeric_limits<float>::infinity();
 
@@ -285,6 +292,8 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector 
 
 float GetMaxPolygonProjAxis(const Polygon& A, const Vector d)
 {
+	assert(A.vertices.size() >= 3  && "Pol min vertices is 3");
+
 	float maxProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y; 
 	const int nVertA = A.vertices.size(); 
 	int dir = (A.vertices[0].x * d.x + A.vertices[0].y * d.y) < 
@@ -319,6 +328,8 @@ bool SegmentIntersect(Point A, Point B, Point C, Point D)
 
 bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
 {
+	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+
 	// A inside B
 	{
 		const int nAVert = A.vertices.size();
@@ -344,6 +355,7 @@ bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
 
 bool IsPointInsidePolygon(Point A, const Polygon& pol)
 {
+	assert(pol.vertices.size() >= 3  && "Pol min vertices is 3");
 
 	bool isInside = IsPointInsidePolygonRec(A, pol, 1, pol.vertices.size()-1);
 	return isInside;
@@ -369,6 +381,8 @@ bool IsPointInsidePolygon(Point A, const Polygon& pol)
 
 bool IsPointInsidePolygonRec(Point A, const Polygon& pol, const int left, const int right)
 {
+	assert(pol.vertices.size() >= 3 && "Pol min vertices is 3");
+
 	if (right - left <= 1) {
 		return IsPointInsideTriangle(A, pol.vertices[0], pol.vertices[left], pol.vertices[right]);
 	}
@@ -408,6 +422,8 @@ bool IsPointInsideTriangle(const Point pt, const Point v0, const Point v1, const
 
 Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLmtPol)
 {
+	assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
+
 	if (A.vertices.size() == 3) return A;
 
 	Polygon newPol;

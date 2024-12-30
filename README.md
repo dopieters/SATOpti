@@ -18,10 +18,10 @@ Note: The above description of SAT is valid for polygons in 2D. For polygons in 
 
 ## TODO list
   
-1. The PolygonInterTestSATOpti center-to-center axes test could be optimized to run in O(log(n + m)) time.
-2. The PolygonComputeReducePol function for finding the vertex could be optimized. In addition, returning a polygon is unnecessary; an index interval should suffice.
-3. The last edge test, corresponding to a diagonal of the polygon, might be skippable.
-4. A debug mode, where one can write out and load polygon data, needs to be added. 
+
+1. The PolygonComputeReducePol function for finding the vertex could be optimized. In addition, returning a polygon is unnecessary; an index interval should suffice.
+2. The last edge test, corresponding to a diagonal of the polygon, might be skippable.
+3. A debug mode, where one can write out and load polygon data, needs to be added. 
 
 In addition, other convex polygon intersection tests, such as GJK or Chung–Wang, could be added
 

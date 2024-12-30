@@ -149,8 +149,8 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 	bool bInterSAT = measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
 	bool bInterSATOpti = measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
 
-	assert(bInterBForce == bInterSAT & "Brut force and SAT test should agree with each other");
-	assert(bInterBForce == bInterSAT & "Brut force and SAT Opti test should agree with each other");
+	assert(bInterBForce == bInterSAT && "Brut force and SAT test should agree with each other");
+	assert(bInterBForce == bInterSAT && "Brut force and SAT Opti test should agree with each other");
 
 
 	return bInterBForce;
@@ -230,10 +230,9 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 {
 	
 	Vector barAxis = B.baryCenter - A.baryCenter;
-	barAxis = barAxis / barAxis.Mag();
-	
-	auto AProj = GetMinMaxPolygonProjAxis(A, barAxis);
-	auto BProj = GetMinMaxPolygonProjAxis(B, barAxis);
+
+	auto aMax = GetMaxPolygonProjAxis(A, barAxis);
+	auto bMin = - GetMaxPolygonProjAxis(B, -barAxis);
 
 	// check if barycenter inside each other
 	// commented because it makes the comparison with the other SAT method unfair
@@ -242,13 +241,13 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	}*/
 
 	// check if this axis is not a separating axis
-	if (AProj.first > BProj.second || AProj.second < BProj.first) {
+	if (aMax < bMin) {
 		return false;
 	}
 
 	// compute reduced polygon
-	std::future<Polygon> resultC = std::async(std::launch::async, PolygonComputeReducePol, A, barAxis, BProj.first, true);
-	std::future<Polygon> resultD = std::async(std::launch::async, PolygonComputeReducePol, B, barAxis, AProj.second, false);
+	std::future<Polygon> resultC = std::async(std::launch::async, PolygonComputeReducePol, A, barAxis, bMin, true);
+	std::future<Polygon> resultD = std::async(std::launch::async, PolygonComputeReducePol, B, barAxis, aMax, false);
 	
 	Polygon C = resultC.get();
 	Polygon D = resultD.get();
@@ -257,7 +256,7 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	return PolygonInterTestSAT(C, D);
 }
 
-std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
+std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector d)
 {
 	float minProj = std::numeric_limits<float>::infinity();
 	float maxProj = - std::numeric_limits<float>::infinity();
@@ -282,6 +281,22 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d)
 	}
 
 	return { minProj, maxProj };
+}
+
+float GetMaxPolygonProjAxis(const Polygon& A, const Vector d)
+{
+	float maxProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y; 
+	const int nVertA = A.vertices.size(); 
+	int dir = (A.vertices[0].x * d.x + A.vertices[0].y * d.y) < 
+							(A.vertices[1].x * d.x + A.vertices[1].y * d.y) ? 1 : -1; 
+	int nextInd = (dir == 1) ? 1 : nVertA - 1; 
+	while (true) { 
+		float nexProj = A.vertices[nextInd].x * d.x + A.vertices[nextInd].y * d.y; 
+		if (nexProj < maxProj) break; 
+		maxProj = nexProj; nextInd += dir; 
+	}
+
+	return maxProj;
 }
 
 float CrossProd2D(Vector Va, Vector Vb)

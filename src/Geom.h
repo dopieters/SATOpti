@@ -72,7 +72,8 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B);
 bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B);
 
 // first minProj, second maxProj
-std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, Vector d);
+std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector d);
+float GetMaxPolygonProjAxis(const Polygon& A, const Vector d);
 
 float CrossProd2D(Vector Va, Vector Vb);
 

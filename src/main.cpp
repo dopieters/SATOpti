@@ -16,7 +16,7 @@ void RunDebugMode() {
 }
 
 void RunPerfComp() {
-	PerfTest test(100, {10, 100, 500});
+	PerfTest test(1000, {500});
 	test.Run();
 
 

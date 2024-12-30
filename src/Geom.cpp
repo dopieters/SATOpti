@@ -269,6 +269,44 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 #endif
 }
 
+bool PolygonInterTestSATForRedPol(const Polygon& A, const Polygon& B)
+{
+	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+	std::vector<Vector> axisToTestAgainst;
+	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
+
+	// A's axes
+	{
+		int nVertA = A.vertices.size();
+		for (int ii = 0; ii < nVertA - 1; ++ii) {
+			const Vector edgeVec = A.vertices[ii] - A.vertices[ii + 1];
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
+		}
+	}
+
+	// B's axes
+	{
+		int nVertB = B.vertices.size();
+		for (int ii = 0; ii < nVertB - 1 ; ++ii) {
+			const Vector edgeVec = B.vertices[ii] - B.vertices[(ii + 1)];
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
+		}
+	}
+
+	// Test axes
+	for (const Vector axis : axisToTestAgainst) {
+		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
+		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
+		if (AProj.first > BProj.second || AProj.second < BProj.first) {
+			return false;
+		}
+
+	}
+
+
+	return true;
+}
+
 
 bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 {
@@ -298,7 +336,16 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	Polygon D = resultD.get();
 
 	// return test on new polygon
+#if 1 
 	return PolygonInterTestSAT(C, D);
+#else
+	if (C.vertices.size() == A.vertices.size() || D.vertices.size() < B.vertices.size()) {
+		return PolygonInterTestSAT(C, D);
+	}
+	else {
+		return PolygonInterTestSATForRedPol(C, D);
+	}
+#endif
 }
 
 std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector d)

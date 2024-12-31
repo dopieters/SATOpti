@@ -27,20 +27,17 @@ Note: The above description of SAT is valid for polygons in 2D. For polygons in 
 ## Current results 
 
 > Brute force with 500 vertices:
-> - Average time with inter : 0.262911ms
-> - Average time with no inter : 0.883101ms
+> - Average time with inter : 0.280373ms
+> - Average time with no inter : 0.96294ms
 > SAT with 500 vertices:
-> - Average time with inter : 6.46251ms
-> - Average time with no inter : 0.259675ms
+> - Average time with inter : 0.786621ms
+> - Average time with no inter : 0.0314419ms
 > SAT opti with 500 vertices:
-> - Average time with inter : 0.560346ms
-> - Average time with no inter : 0.00115418ms
+> - Average time with inter : 0.0783183ms
+> - Average time with no inter : 0.000664432ms
 
-On my computer, the new method performs on average 10 (210) times faster than the typical SAT method for polygons with 500 vertices. However, in cases of intersection, it is 2.5 to 3 times slower on average than the brute force method.
-
-The main reason is that the brute force method exits when it finds an intersection, while the SAT method exits when it finds a separation. This can be seen as in cases of no intersection, where the new method is 800 times faster than the brute force method.
-
-Before choosing to use any method, one needs to understand its use case and choose the appropriate method.
+After the final optimization of both SAT and the new algorithm based on SAT, the time cost is quite similar. 
+The only difference is due to the test without intersection. This difference is mainly due to two early exit tests that could easily be added to the original method.
 
 Note: The new method does not provide any minimal vector translation to resolve collisions.
 

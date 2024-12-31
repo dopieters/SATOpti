@@ -195,7 +195,6 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
-#if 1
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
 
@@ -229,64 +228,20 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	computePolEdgesNorm(B);
 
 	// Test axes
-	for (const Vector axis : axisToTestAgainst) {
-		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
-		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
-		if (AProj.first > BProj.second || AProj.second < BProj.first) {
-			return false;
-		}
+	{
+		//ScopeTimeMeasure test("Max");
+		for (const Vector axis : axisToTestAgainst) {
+			std::pair<float, float> AProj = { -GetMaxPolygonProjAxis(A, -axis), GetMaxPolygonProjAxis(A, axis) };
+			std::pair<float, float> BProj = { -GetMaxPolygonProjAxis(B, -axis), GetMaxPolygonProjAxis(B, axis) };
+			if (AProj.first > BProj.second || AProj.second < BProj.first) {
+				return false;
+			}
 
+		}
 	}
 
 	return true;
 
-#else 
-
-	
-
-	auto IsFirstPolAxisSep = [&](const Polygon& pol) -> bool {
-		{
-			auto isSeparatingAxis = [&](const Vector axis) -> bool {
-				auto AProj = GetMinMaxPolygonProjAxis(A, axis);
-				auto BProj = GetMinMaxPolygonProjAxis(B, axis);
-				if (AProj.first > BProj.second || AProj.second < BProj.first) {
-					return true;
-				}
-
-				return false;
-				};
-
-			int nVert = pol.vertices.size();
-			int ii = 0;
-			for (; ii + 3 < nVert - 1; ii+=4) {
-				const Vector edgeVec1 = pol.vertices[ii] - pol.vertices[ii + 1];
-				const Vector edgeVec2 = pol.vertices[ii + 1] - pol.vertices[ii + 2];
-				const Vector edgeVec3 = pol.vertices[ii + 2] - pol.vertices[ii + 3];
-				const Vector edgeVec4 = pol.vertices[ii + 3] - pol.vertices[ii + 4];
-				if (isSeparatingAxis(edgeVec1) || isSeparatingAxis(edgeVec2) ||
-					isSeparatingAxis(edgeVec3) || isSeparatingAxis(edgeVec4)
-					) return true;
-			}
-
-			for (; ii < nVert - 1; ++ii) { 
-				Vector edgeVec = pol.vertices[ii] - pol.vertices[ii + 1]; 
-				if (isSeparatingAxis(edgeVec)) return true; 
-			}
-
-			const Vector edgeVec = pol.vertices[ii] - pol.vertices[0];
-			if (isSeparatingAxis(edgeVec)) return true;
-
-
-			return false;
-		}
-		};
-
-
-	if (IsFirstPolAxisSep(A)) return false;
-	if (IsFirstPolAxisSep(B)) return false;
-
-	return true;
-#endif
 }
 
 bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
@@ -329,8 +284,8 @@ bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& REST
 	// Test axes
 	{
 		for (const Vector axis : axisToTestAgainst) {
-			auto AProj = GetMinMaxPolygonProjAxis(A, axis);
-			auto BProj = GetMinMaxPolygonProjAxis(B, axis);
+			std::pair<float, float> AProj = { -GetMaxPolygonProjAxis(A, -axis), GetMaxPolygonProjAxis(A, axis) };
+			std::pair<float, float> BProj = { -GetMaxPolygonProjAxis(B, -axis), GetMaxPolygonProjAxis(B, axis) };
 			if (AProj.first > BProj.second || AProj.second < BProj.first) {
 				return false;
 			}
@@ -435,7 +390,8 @@ float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 	int nextInd = (dir == 1) ? 1 : nVertA - 1; 
 	while (true) { 
 		float nexProj = A.vertices[nextInd].x * d.x + A.vertices[nextInd].y * d.y; 
-		if (nexProj < maxProj) break; 
+		// use < to avoid problem with collinear points
+		if (nexProj < maxProj || (nextInd == nVertA - 1 && dir == 1) || (nextInd == 0 && dir == -1)) break; 
 		maxProj = nexProj; nextInd += dir; 
 	}
 

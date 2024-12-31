@@ -2,6 +2,14 @@
 #include <vector> // std::vector
 #include <cmath> // std::sqrt
 
+#if defined(_MSC_VER) 
+#define RESTRICT __restrict 
+#elif defined(__GNUC__) || defined(__clang__) 
+#define RESTRICT __restrict__ 
+#else #define RESTRICT #endif
+#endif
+
+
 constexpr double pi = 3.14159265358979323846;
 
 struct Point{
@@ -54,7 +62,7 @@ typedef Point Vector;
 Vertex MakeRandomVertexPt();
 
 //Function to sort points by angle 
-bool CompareByAngle(const Vertex& a, const Vertex& b);
+bool CompareByAngle(const Vertex a, const Vertex b);
 
 struct Polygon
 {
@@ -66,15 +74,15 @@ struct Polygon
 // https://cglab.ca/~sander/misc/ConvexGeneration/convex.html
 Polygon MakeConvexPol(int nVertices);
 
-bool DoPolygonsIntersects(const Polygon& A, const Polygon& B);
-bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B);
-bool PolygonInterTestSAT(const Polygon& A, const Polygon& B);
-bool PolygonInterTestSATForRedPol(const Polygon& A, const Polygon& B);
-bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B);
+bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
+bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
+bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
+bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
+bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 
 // first minProj, second maxProj
-std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector d);
-float GetMaxPolygonProjAxis(const Polygon& A, const Vector d);
+std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d);
+float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d);
 
 float CrossProd2D(Vector Va, Vector Vb);
 
@@ -82,10 +90,10 @@ float CrossProd2D(Vector Va, Vector Vb);
 bool SegmentIntersect(Point A, Point B, Point C, Point D);
 
 // Check for every vertex if it is includes in the other polygon
-bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B);
+bool PolygonIncludeInEachOther(const Polygon& RESTRICT A, const Polygon& B);
 
-bool IsPointInsidePolygon(Point A, const Polygon& pol);
-bool IsPointInsidePolygonRec(Point A, const Polygon& pol, const int left, const int right );
+bool IsPointInsidePolygon(Point A, const Polygon& RESTRICT pol);
+bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT pol, const int left, const int right );
 bool IsPointInsideTriangle(const Point A, const Vertex v0, const Vertex v1, const Vertex v2);
 
-Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLimit);
+Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, const float limit, const bool isAbvLimit);

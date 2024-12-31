@@ -13,7 +13,8 @@ inline bool measureExecutionTime(Func func, const std::string& funcName, Polygon
 	bool isIntersect = func(A, B);
 	auto end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double, std::milli> duration = end - start;
-	std::cout << funcName << " took " << duration.count() << " ms\n";
+	std::string s = isIntersect ? "Intersect" : "don't intersect";
+	std::cout << funcName << " took " << duration.count() << " ms" << s << "\n";
 	return isIntersect;
 }
 

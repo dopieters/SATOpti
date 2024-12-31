@@ -17,6 +17,8 @@ void RunDebugMode() {
 
 void RunPerfComp() {
 	PerfTest test(5000, {500});
+	// init seed
+	srand(123);
 	test.Run();
 
 

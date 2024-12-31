@@ -25,3 +25,26 @@ Note: The above description of SAT is valid for polygons in 2D. For polygons in 
 
 In addition, other convex polygon intersection tests, such as GJK or Chung–Wang, could be added
 
+
+
+## Current results 
+
+> Brute force with 500 vertices:
+> - Average time with inter : 0.262911ms
+> - Average time with no inter : 0.883101ms
+> SAT with 500 vertices:
+> - Average time with inter : 6.46251ms
+> - Average time with no inter : 0.259675ms
+> SAT opti with 500 vertices:
+> - Average time with inter : 0.560346ms
+> - Average time with no inter : 0.00115418ms
+
+On my computer, the new method performs on average 10 (210) times faster than the typical SAT method for polygons with 500 vertices. However, in cases of intersection, it is 2.5 to 3 times slower on average than the brute force method.
+
+The main reason is that the brute force method exits when it finds an intersection, while the SAT method exits when it finds a separation. This can be seen as in cases of no intersection, where the new method is 800 times faster than the brute force method.
+
+Before choosing to use any method, one needs to understand its use case and choose the appropriate method.
+
+Note: The new method does not provide any minimal vector translation to resolve collisions.
+
+

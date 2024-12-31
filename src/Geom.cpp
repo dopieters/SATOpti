@@ -19,7 +19,7 @@ Vertex MakeRandomVertexPt() {
 	return pt;
 }
 
-bool CompareByAngle(const Vertex& a, const Vertex& b)
+bool CompareByAngle(const Vertex a, const Vertex b)
 {
 	return atan2(a.y, a.x) < atan2(b.y, b.x);
 }
@@ -140,7 +140,7 @@ Polygon MakeConvexPol(int nVertices) {
 }
 
 
-bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
+bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
@@ -155,7 +155,7 @@ bool DoPolygonsIntersects(const Polygon& A, const Polygon& B)
 	return bInterBForce;
 }
 
-bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B)
+bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
@@ -191,7 +191,7 @@ bool PolygonsInterTestBForce(const Polygon& A, const Polygon& B)
 	return false;
 }
 
-bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
+bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
@@ -199,23 +199,34 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
 
-	// A's axes
-	{
-		int nVertA = A.vertices.size();
-		for (int ii = 0; ii < nVertA; ++ii) {
-			const Vector edgeVec = A.vertices[ii] - A.vertices[(ii + 1) % nVertA];
-			axisToTestAgainst.emplace_back(Vector{-edgeVec.y , edgeVec.x});
+	auto computePolEdgesNorm = [&axisToTestAgainst](const Polygon& RESTRICT pol ) {
+		const int nVert = pol.vertices.size();
+		int ii = 0;
+		for (; ii+3 < nVert-1; ii+=4) {
+			const Vector edgeVec1 = pol.vertices[ii] - pol.vertices[ii + 1];
+			const Vector edgeVec2 = pol.vertices[ii+1] - pol.vertices[ii + 2];
+			const Vector edgeVec3 = pol.vertices[ii+2] - pol.vertices[ii + 3];
+			const Vector edgeVec4 = pol.vertices[ii+3] - pol.vertices[ii + 4];
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec1.y , edgeVec1.x });
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec2.y , edgeVec2.x });
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec3.y , edgeVec3.x });
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec4.y , edgeVec4.x });
 		}
-	}
 
-	// B's axes
-	{
-		int nVertB = B.vertices.size();
-		for (int ii = 0; ii < nVertB; ++ii) {
-			const Vector edgeVec = B.vertices[ii] - B.vertices[(ii + 1) % nVertB];
+		for (; ii + 3 < nVert - 1; ii += 4) {
+			const Vector edgeVec = pol.vertices[ii] - pol.vertices[ii + 1];
 			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
 		}
-	}
+
+		const Vector edgeVec = pol.vertices[ii] - pol.vertices[0];
+		axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
+		};
+
+	// A's axes
+	computePolEdgesNorm(A);
+
+	// B's axes
+	computePolEdgesNorm(B);
 
 	// Test axes
 	for (const Vector axis : axisToTestAgainst) {
@@ -231,67 +242,85 @@ bool PolygonInterTestSAT(const Polygon& A, const Polygon& B)
 
 #else 
 
-	auto isSeparatingAxis = [&](const Vector axis) -> bool {
-		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
-		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
-		if (AProj.first > BProj.second || AProj.second < BProj.first) {
-			return true;
-		}
+	
 
-		return false;
+	auto IsFirstPolAxisSep = [&](const Polygon& pol) -> bool {
+		{
+			auto isSeparatingAxis = [&](const Vector axis) -> bool {
+				auto AProj = GetMinMaxPolygonProjAxis(A, axis);
+				auto BProj = GetMinMaxPolygonProjAxis(B, axis);
+				if (AProj.first > BProj.second || AProj.second < BProj.first) {
+					return true;
+				}
+
+				return false;
+				};
+
+			int nVert = pol.vertices.size();
+			int ii = 0;
+			for (; ii + 3 < nVert - 1; ii+=4) {
+				const Vector edgeVec1 = pol.vertices[ii] - pol.vertices[ii + 1];
+				const Vector edgeVec2 = pol.vertices[ii + 1] - pol.vertices[ii + 2];
+				const Vector edgeVec3 = pol.vertices[ii + 2] - pol.vertices[ii + 3];
+				const Vector edgeVec4 = pol.vertices[ii + 3] - pol.vertices[ii + 4];
+				if (isSeparatingAxis(edgeVec1) || isSeparatingAxis(edgeVec2) ||
+					isSeparatingAxis(edgeVec3) || isSeparatingAxis(edgeVec4)
+					) return true;
+			}
+
+			for (; ii < nVert - 1; ++ii) { 
+				Vector edgeVec = pol.vertices[ii] - pol.vertices[ii + 1]; 
+				if (isSeparatingAxis(edgeVec)) return true; 
+			}
+
+			const Vector edgeVec = pol.vertices[ii] - pol.vertices[0];
+			if (isSeparatingAxis(edgeVec)) return true;
+
+
+			return false;
+		}
 		};
 
-	// A's axes
-	{
-		int nVertA = A.vertices.size();
-		int ii = 0;
-		for (; ii < nVertA -1 ; ++ii) {
-			const Vector edgeVec = A.vertices[ii] - A.vertices[ii + 1];
-			if (isSeparatingAxis(edgeVec)) return false;
-		}
-		const Vector edgeVec = A.vertices[ii] - A.vertices[0];
-		if (isSeparatingAxis(edgeVec)) return false;
-	}
 
-	// B's axes
-	{
-		int nVertB = B.vertices.size();
-		int ii = 0;
-		for (; ii < nVertB - 1; ++ii) {
-			const Vector edgeVec = B.vertices[ii] - B.vertices[ii + 1];
-			if (isSeparatingAxis(edgeVec)) return false;
-		}
-		const Vector edgeVec = B.vertices[ii] - B.vertices[0];
-		if (isSeparatingAxis(edgeVec)) return false;
-	}
+	if (IsFirstPolAxisSep(A)) return false;
+	if (IsFirstPolAxisSep(B)) return false;
 
 	return true;
 #endif
 }
 
-bool PolygonInterTestSATForRedPol(const Polygon& A, const Polygon& B)
+bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
 
-	// A's axes
-	{
-		int nVertA = A.vertices.size();
-		for (int ii = 0; ii < nVertA - 1; ++ii) {
-			const Vector edgeVec = A.vertices[ii] - A.vertices[ii + 1];
+	auto computePolEdgesNorm = [&axisToTestAgainst](const Polygon& RESTRICT pol) {
+		const int nVert = pol.vertices.size();
+		int ii = 0;
+		for (; ii + 3 < nVert - 1; ii += 4) {
+			const Vector edgeVec1 = pol.vertices[ii] - pol.vertices[ii + 1];
+			const Vector edgeVec2 = pol.vertices[ii + 1] - pol.vertices[ii + 2];
+			const Vector edgeVec3 = pol.vertices[ii + 2] - pol.vertices[ii + 3];
+			const Vector edgeVec4 = pol.vertices[ii + 3] - pol.vertices[ii + 4];
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec1.y , edgeVec1.x });
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec2.y , edgeVec2.x });
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec3.y , edgeVec3.x });
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec4.y , edgeVec4.x });
+		}
+
+		for (; ii + 3 < nVert - 1; ii += 4) {
+			const Vector edgeVec = pol.vertices[ii] - pol.vertices[ii + 1];
 			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
 		}
-	}
+		};
+
+	// A's axes
+	computePolEdgesNorm(A);
 
 	// B's axes
-	{
-		int nVertB = B.vertices.size();
-		for (int ii = 0; ii < nVertB - 1 ; ++ii) {
-			const Vector edgeVec = B.vertices[ii] - B.vertices[(ii + 1)];
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
-		}
-	}
+	computePolEdgesNorm(B);
 
 	// Test axes
 	for (const Vector axis : axisToTestAgainst) {
@@ -303,12 +332,11 @@ bool PolygonInterTestSATForRedPol(const Polygon& A, const Polygon& B)
 
 	}
 
-
 	return true;
 }
 
 
-bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
+bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
@@ -318,10 +346,9 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	auto bMin = - GetMaxPolygonProjAxis(B, -barAxis);
 
 	// check if barycenter inside each other
-	// commented because it makes the comparison with the other SAT method unfair
-	/*if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
+	if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
 		return true;
-	}*/
+	}
 
 	// check if this axis is not a separating axis
 	if (aMax < bMin) {
@@ -336,9 +363,9 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 	Polygon D = resultD.get();
 
 	// return test on new polygon
-#if 1 
+#if 0
 	return PolygonInterTestSAT(C, D);
-#else
+#else // Do not compute closing edge norm as barAxis act as it
 	if (C.vertices.size() == A.vertices.size() || D.vertices.size() < B.vertices.size()) {
 		return PolygonInterTestSAT(C, D);
 	}
@@ -348,7 +375,7 @@ bool PolygonInterTestSATOpti(const Polygon& A, const Polygon& B)
 #endif
 }
 
-std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector d)
+std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 {
 	assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
 
@@ -377,7 +404,7 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& A, const Vector 
 	return { minProj, maxProj };
 }
 
-float GetMaxPolygonProjAxis(const Polygon& A, const Vector d)
+float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 {
 	assert(A.vertices.size() >= 3  && "Pol min vertices is 3");
 
@@ -413,7 +440,7 @@ bool SegmentIntersect(Point A, Point B, Point C, Point D)
 	}
 }
 
-bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
+bool PolygonIncludeInEachOther(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
@@ -440,7 +467,7 @@ bool PolygonIncludeInEachOther(const Polygon& A, const Polygon& B)
 	return false;
 }
 
-bool IsPointInsidePolygon(Point A, const Polygon& pol)
+bool IsPointInsidePolygon(Point A, const Polygon& RESTRICT pol)
 {
 	assert(pol.vertices.size() >= 3  && "Pol min vertices is 3");
 
@@ -466,7 +493,7 @@ bool IsPointInsidePolygon(Point A, const Polygon& pol)
 	return true;
 }
 
-bool IsPointInsidePolygonRec(Point A, const Polygon& pol, const int left, const int right)
+bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT pol, const int left, const int right)
 {
 	assert(pol.vertices.size() >= 3 && "Pol min vertices is 3");
 
@@ -507,7 +534,7 @@ bool IsPointInsideTriangle(const Point pt, const Point v0, const Point v1, const
 
 }
 
-Polygon PolygonComputeReducePol(const Polygon& A, const Vector axis, const float limit, const bool isAbvLmtPol)
+Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, const float limit, const bool isAbvLmtPol)
 {
 	assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
 

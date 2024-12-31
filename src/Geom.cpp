@@ -317,19 +317,25 @@ bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& REST
 		};
 
 	// A's axes
-	computePolEdgesNorm(A);
+	{
+		computePolEdgesNorm(A);
+	}
 
 	// B's axes
-	computePolEdgesNorm(B);
+	{
+		computePolEdgesNorm(B);
+	}
 
 	// Test axes
-	for (const Vector axis : axisToTestAgainst) {
-		auto AProj = GetMinMaxPolygonProjAxis(A, axis);
-		auto BProj = GetMinMaxPolygonProjAxis(B, axis);
-		if (AProj.first > BProj.second || AProj.second < BProj.first) {
-			return false;
-		}
+	{
+		for (const Vector axis : axisToTestAgainst) {
+			auto AProj = GetMinMaxPolygonProjAxis(A, axis);
+			auto BProj = GetMinMaxPolygonProjAxis(B, axis);
+			if (AProj.first > BProj.second || AProj.second < BProj.first) {
+				return false;
+			}
 
+		}
 	}
 
 	return true;
@@ -356,17 +362,31 @@ bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 	}
 
 	// compute reduced polygon
+#if 1
+	// non async method has shown quicker results (at 500 vertices)
+	Polygon C = PolygonComputeReducePol(A, barAxis, bMin, true);
+	Polygon D = PolygonComputeReducePol(B, barAxis, aMax, false);
+
+# else
+	
 	std::future<Polygon> resultC = std::async(std::launch::async, PolygonComputeReducePol, A, barAxis, bMin, true);
 	std::future<Polygon> resultD = std::async(std::launch::async, PolygonComputeReducePol, B, barAxis, aMax, false);
+
+	C = resultC.get();
+	D = resultD.get();
+#endif
+
+
 	
-	Polygon C = resultC.get();
-	Polygon D = resultD.get();
+	
+
+	
 
 	// return test on new polygon
 #if 0
 	return PolygonInterTestSAT(C, D);
 #else // Do not compute closing edge norm as barAxis act as it
-	if (C.vertices.size() == A.vertices.size() || D.vertices.size() < B.vertices.size()) {
+	if (C.vertices.size() == A.vertices.size() || D.vertices.size() == B.vertices.size()) {
 		return PolygonInterTestSAT(C, D);
 	}
 	else {

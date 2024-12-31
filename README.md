@@ -18,11 +18,9 @@ Note: The above description of SAT is valid for polygons in 2D. For polygons in 
 
 ## TODO list
   
-
-1. The PolygonComputeReducePol function for finding the vertex could be optimized. In addition, returning a polygon is unnecessary; an index interval should suffice.
-2. A debug mode, where one can write out and load polygon data, needs to be added. 
-
-In addition, other convex polygon intersection tests, such as GJK or Chung–Wang, could be added
+1. A debug mode, where one can write out and load polygon data, needs to be added. 
+2. A debug mode, to scan for coherence between the different method (that save bugged events)
+3. Other convex polygon intersection tests, such as GJK or Chung–Wang, could be added
 
 
 

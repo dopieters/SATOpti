@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <string>
 #include <chrono>
 #include "Geom.h"
 
@@ -26,4 +27,16 @@ inline std::pair<bool, float> measureExecutionTime(Func func, Polygon A, Polygon
 	std::chrono::duration<double, std::milli> duration = end - start;
 	return {isIntersect, duration.count()};
 }
+
+
+class ScopeTimeMeasure
+{
+public:
+	ScopeTimeMeasure(const std::string& n);
+	~ScopeTimeMeasure();
+
+private:
+	std::chrono::steady_clock::time_point m_start;
+	std::string m_scopeName;
+};
 

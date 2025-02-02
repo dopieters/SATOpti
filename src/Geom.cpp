@@ -179,9 +179,17 @@ bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 		}
 	}
 
-	// Test if point inside each other
+	//// Test if point inside each other
+	//{
+	//	if (PolygonIncludeInEachOther(A, B)) {
+	//		return true;
+	//	}
+	//}
+
+	// Test if one vertex is inside the other polygon
 	{
-		if (PolygonIncludeInEachOther(A, B)) {
+		if (IsPointInsidePolygon(A.vertices[0], B)
+			|| IsPointInsidePolygon(B.vertices[0], A)) {
 			return true;
 		}
 	}

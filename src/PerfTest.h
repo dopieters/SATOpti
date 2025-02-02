@@ -15,7 +15,9 @@ private:
 	const int nTest;
 	std::vector<int> polNbVerticesTestList;
 
-	void PrintResult(const std::string& funcName, int polVert, float timeInter, float timeNoInter) const;
-
+	void PrintResult(const std::string& funcName, int polVert, float timeInter, float timeNoInter, int nInter) const;
+	template <typename Func>
+	void TestMethod(const std::string& funcName, const std::vector<std::pair<Polygon, Polygon>>& pairPol, Func f);
 };
+
 

@@ -254,7 +254,7 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 
 bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
-	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
 
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());

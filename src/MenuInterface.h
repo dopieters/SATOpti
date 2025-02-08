@@ -12,7 +12,7 @@ public:
 
 private:
 	std::string m_MainString;
-	std::vector<std::string> m_StringOption;
+	std::vector<std::string> m_StringOptions;
 	std::vector<std::function<void()>> m_MenuFunctions;
 
 

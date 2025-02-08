@@ -2,6 +2,7 @@
 #include "Utilities.h"
 #include "PerfTest.h"
 #include "MenuInterface.h"
+#include "DebugMode.h"
 
 #undef main
 
@@ -13,11 +14,12 @@ void QuitProgram() {
 
 
 void RunDebugMode() {
-
+	DebugMode db;
+	db.Run();
 };
 
 void RunPerfComp() {
-	PerfTest test(100, {100});
+	PerfTest test(1000, {100});
 	// init seed
 	srand(123);
 	test.Run();

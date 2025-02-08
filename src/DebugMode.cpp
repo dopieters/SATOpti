@@ -42,6 +42,27 @@ void DebugMode::RunDrawDebugMode()
 
 void DebugMode::RunDebugMethodConsistency()
 {
+	Polygon A, B;
+	for (int ii = 0; ii < 1000; ++ii) {
+		A = MakeConvexPol(100); B = MakeConvexPol(100);
+
+		bool bIntersectBForce = PolygonsInterTestBForce(A, B);
+		bool bIntersectSAT = PolygonInterTestSAT(A, B);
+		bool bIntersectSATOpti = PolygonInterTestSATOpti(A, B);
+
+		if (bIntersectBForce != bIntersectSAT) {
+			std::cout << "Brute force and SAT produce different results" << std::endl;
+		}
+
+		if (bIntersectBForce != bIntersectSATOpti) {
+			std::cout << "Brute force and SATOpti produce different results" << std::endl;
+		}
+
+
+
+	}
+
+
 }
 
 void DebugMode::RunLoadEvent()

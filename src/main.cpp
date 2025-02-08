@@ -1,22 +1,23 @@
-#include <SDL2/SDL.h>
 #include <iostream>
-#include "DebugMode.h"
 #include "Utilities.h"
 #include "PerfTest.h"
-
+#include "MenuInterface.h"
 
 #undef main
 
+bool bQuitProg = false;
 
-void RunDebugMode() {
-	DebugMode db;
-	if (db.IsValid()) {
-		db.Run();
-	}
+void QuitProgram() {
+	bQuitProg = true;
 }
 
+
+void RunDebugMode() {
+
+};
+
 void RunPerfComp() {
-	PerfTest test(5000, {500});
+	PerfTest test(100, {100});
 	// init seed
 	srand(123);
 	test.Run();
@@ -29,43 +30,15 @@ void RunPerfComp() {
 int main(int argc, char* argv[])
 {	
 
-	bool bRun = true;
+	MenuInterface menu("Choose a mode");
+	menu.AddOptions("Debug mode", &RunDebugMode);
+	menu.AddOptions("Performance comparizon", &RunPerfComp);
+	menu.AddOptions("Quit", &QuitProgram);
 
-	while (bRun) {
-		std::cout << "Choose a mode \n";
-		std::cout << "1. Debug \n" << "2. Performance comp \n" << "3. Quit" << std::endl;
-		int input = 0;
-		if (std::cin >> input) {
-
-			switch (input) {
-			case 1:
-				RunDebugMode();
-				break;
-			case 2:
-				RunPerfComp();
-				break;
-			case 3:
-				bRun = false;
-				break;
-			default:
-				std::cin.clear();
-				ClearTerminal();
-				std::cout << "Not a valid option, try again" << std::endl;
-				break;
-			}
-		}
-		else {
-			ClearTerminal();
-			std::cin.clear();
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			std::cout << "Not a valid input, try again" << std::endl;
-		}
-
+	while (!bQuitProg) {
+		menu.RunInterface();
 	}
 
-
-
-	
 	return 0;
 
 }

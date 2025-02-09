@@ -22,6 +22,9 @@ private:
 	void RunDebugMethodConsistency();
 	void RunLoadEvent();
 	void Quit() { m_QuitDebugMode = true; }
+
+
+	bool bDrawWndOpen = false;
 	
 };
 

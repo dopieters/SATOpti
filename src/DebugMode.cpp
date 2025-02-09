@@ -5,6 +5,7 @@
 #include "MenuInterface.h"
 
 #include "DebugDrawMode.h"
+#include "DrawWindow.h"
 
 
 DebugMode::DebugMode():
@@ -42,25 +43,31 @@ void DebugMode::RunDrawDebugMode()
 
 void DebugMode::RunDebugMethodConsistency()
 {
-	Polygon A, B;
-	for (int ii = 0; ii < 1000; ++ii) {
-		A = MakeConvexPol(100); B = MakeConvexPol(100);
+	std::vector<std::pair<Polygon, Polygon>> pairToDraw;
 
-		bool bIntersectBForce = PolygonsInterTestBForce(A, B);
-		bool bIntersectSAT = PolygonInterTestSAT(A, B);
-		bool bIntersectSATOpti = PolygonInterTestSATOpti(A, B);
+	{
+		Polygon A, B;
+		for (int nbTests = 0; nbTests < 1000; ++nbTests) {
+			A = MakeConvexPol(100); B = MakeConvexPol(100);
 
-		if (bIntersectBForce != bIntersectSAT) {
-			std::cout << "Brute force and SAT produce different results" << std::endl;
+			bool bIntersectBForce = PolygonsInterTestBForce(A, B);
+			bool bIntersectSAT = PolygonInterTestSAT(A, B);
+			bool bIntersectSATOpti = PolygonInterTestSATOpti(A, B);
+
+			if (bIntersectBForce != bIntersectSAT || bIntersectBForce != bIntersectSATOpti) {
+				std::cout << "Inconsistency Between methods observed" << std::endl;
+				pairToDraw.emplace_back(std::pair<Polygon, Polygon>(A, B));
+			}
 		}
-
-		if (bIntersectBForce != bIntersectSATOpti) {
-			std::cout << "Brute force and SATOpti produce different results" << std::endl;
-		}
-
-
-
 	}
+	
+
+	if (!pairToDraw.empty()) {
+		std::cout << "A total of " << pairToDraw.size() << " tests have shown inconsistency";
+		DrawWindow wnd(pairToDraw);
+		if (wnd.IsValid()) { wnd.ScanPairOfPolygons(); }
+	}
+
 
 
 }

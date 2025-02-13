@@ -5,7 +5,7 @@
 #include "MenuInterface.h"
 
 #include "DebugDrawMode.h"
-#include "DrawWindow.h"
+#include "ScanEvents.h"
 
 
 DebugMode::DebugMode():
@@ -64,7 +64,7 @@ void DebugMode::RunDebugMethodConsistency()
 
 	if (!pairToDraw.empty()) {
 		std::cout << "A total of " << pairToDraw.size() << " tests have shown inconsistency";
-		DrawWindow wnd(pairToDraw);
+		ScanEvents wnd(pairToDraw);
 		if (wnd.IsValid()) { wnd.ScanPairOfPolygons(); }
 	}
 

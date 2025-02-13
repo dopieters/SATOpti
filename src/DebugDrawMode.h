@@ -1,12 +1,11 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <iostream>
 #include "Geom.h"
+#include "DrawWindow.h"
 
 struct Polygon;
 
-class DebugDrawMode
+class DebugDrawMode final: public DrawWindow
 {
 public:
 	DebugDrawMode();
@@ -15,17 +14,7 @@ public:
 	// main function to run the debug mode
 	void Run();
 
-	// return whereever the initialization was successful
-	bool IsValid() const { return m_isValid; }
-
 private:
-	// SDL wnd
-	SDL_Window* m_window = nullptr;
-	SDL_Renderer* m_renderer = nullptr;
-
-	// Valid when m_window and m_isRunning 
-	// mem properly allocated
-	bool m_isValid = false;
 
 	// Running variable
 	// false to quit the run function
@@ -43,8 +32,7 @@ private:
 
 
 	void DrawPolygons() const;
-	void DrawPolygon(const Polygon& A) const;
-	void DrawHyperPlanes(const Vector v, const float min, const float max) const;
+	
 
 	// Printout the different commands
 	void PrintCommand() const;

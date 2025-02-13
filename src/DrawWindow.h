@@ -1,19 +1,17 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include "Geom.h"
-#include <vector>
 
 
 class DrawWindow {
 public:
 	DrawWindow();
-	DrawWindow(std::vector<std::pair<Polygon, Polygon>> pairPolygons);
 	~DrawWindow();
 
-	void ScanPairOfPolygons();
+	//void ScanPairOfPolygons();
 	bool IsValid()const { return m_isValid; }
 
-private:
+protected:
 	SDL_Window* m_window = nullptr;
 	SDL_Renderer* m_renderer = nullptr;
 
@@ -21,13 +19,9 @@ private:
 	// mem properly allocated
 	bool m_isValid = false;
 
-	// pair to draw
-	std::vector<std::pair<Polygon, Polygon>> m_EventToDraw;
-	int currentPolPair = 0;
-
-private:
-	void ProcessEvents();
-	void DrawPolygonPairs();
+	
+protected:
 	void DrawPolygon(const Polygon& A) const;
+	void DrawHyperPlanes(const Vector v, const float min, const float max) const;
 
 };

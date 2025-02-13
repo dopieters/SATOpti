@@ -557,3 +557,13 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 	return newPol;
 }
 
+void Polygon::CalculateBarycenter()
+{
+	baryCenter = { 0.f, 0.f };
+	for (const auto& vert : vertices) {
+		baryCenter += Vertex{ vert.x, vert.y };
+	}
+	
+	baryCenter = (1.f / vertices.size()) * baryCenter;
+
+}

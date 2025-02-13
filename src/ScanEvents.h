@@ -9,7 +9,7 @@
 class ScanEvents final : public DrawWindow{
 
 public:
-	ScanEvents(std::vector<std::pair<Polygon, Polygon>> pairPolygons);
+	ScanEvents(std::vector<std::pair<Polygon, Polygon>> pairPolygons, bool save = true);
 	~ScanEvents();
 
 	void ScanPairOfPolygons();
@@ -22,6 +22,7 @@ private:
 private:
 	// pair to draw
 	std::vector<std::pair<Polygon, Polygon>> m_EventToDraw;
-	int currentPolPair = 0;
+	int m_CurrentPolPair = 0;
+	bool m_isSave = true;
 
 };

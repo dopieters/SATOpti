@@ -68,6 +68,8 @@ struct Polygon
 {
 	std::vector<Vertex> vertices;
 	Point baryCenter;
+
+	void CalculateBarycenter();
 };
 
 // algo based on Pavel-Valtr

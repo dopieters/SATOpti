@@ -6,6 +6,7 @@
 
 #include "DebugDrawMode.h"
 #include "ScanEvents.h"
+#include "EventIO.h"
 
 
 DebugMode::DebugMode():
@@ -23,7 +24,7 @@ void DebugMode::Run()
 	MenuInterface menu("Choose a debug mode");
 	menu.AddOptions("Debug with drawing", [&]() {RunDrawDebugMode();});
 	menu.AddOptions("Scan method consistency", [&]() {RunDebugMethodConsistency();});
-	menu.AddOptions("Load event", [&]() {RunDebugMethodConsistency();});
+	menu.AddOptions("Load events", [&]() {RunLoadEvent();});
 	menu.AddOptions("Quit", [&]() {Quit();});
 
 	while (!m_QuitDebugMode) {
@@ -74,4 +75,12 @@ void DebugMode::RunDebugMethodConsistency()
 
 void DebugMode::RunLoadEvent()
 {
+	auto events = loadPairsOfPolygons("events.bin");
+
+	if (events.empty()) return;
+
+	std::cout << "A total of " << events.size() << " have been loaded";
+	ScanEvents wnd(events, false);
+	if (wnd.IsValid()) { wnd.ScanPairOfPolygons(); }
+
 }

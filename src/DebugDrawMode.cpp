@@ -164,6 +164,7 @@ void DebugDrawMode::MakePolygons()
 
 
 	Vector barAxis = pol2.baryCenter - pol1.baryCenter;
+	barAxis = barAxis / barAxis.Mag();
 
 	auto AProj = GetMinMaxPolygonProjAxis(pol1, barAxis);
 	auto BProj = GetMinMaxPolygonProjAxis(pol2, barAxis);

@@ -8,7 +8,6 @@ public:
 	DrawWindow();
 	~DrawWindow();
 
-	//void ScanPairOfPolygons();
 	bool IsValid()const { return m_isValid; }
 
 protected:

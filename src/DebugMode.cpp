@@ -48,8 +48,8 @@ void DebugMode::RunDebugMethodConsistency()
 
 	{
 		Polygon A, B;
-		for (int nbTests = 0; nbTests < 1000; ++nbTests) {
-			A = MakeConvexPol(100); B = MakeConvexPol(100);
+		for (int nbTests = 0; nbTests < 10000; ++nbTests) {
+			A = MakeConvexPol(50); B = MakeConvexPol(50);
 
 			bool bIntersectBForce = PolygonsInterTestBForce(A, B);
 			bool bIntersectSAT = PolygonInterTestSAT(A, B);
@@ -64,7 +64,7 @@ void DebugMode::RunDebugMethodConsistency()
 	
 
 	if (!pairToDraw.empty()) {
-		std::cout << "A total of " << pairToDraw.size() << " tests have shown inconsistency";
+		std::cout << "A total of " << pairToDraw.size() << " tests have shown inconsistency \n";
 		ScanEvents wnd(pairToDraw);
 		if (wnd.IsValid()) { wnd.ScanPairOfPolygons(); }
 	}
@@ -79,7 +79,7 @@ void DebugMode::RunLoadEvent()
 
 	if (events.empty()) return;
 
-	std::cout << "A total of " << events.size() << " have been loaded";
+	std::cout << "A total of " << events.size() << " have been loaded \n";
 	ScanEvents wnd(events, false);
 	if (wnd.IsValid()) { wnd.ScanPairOfPolygons(); }
 

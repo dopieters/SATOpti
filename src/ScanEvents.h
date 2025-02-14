@@ -18,10 +18,13 @@ private:
 	void ProcessEvents();
 	void DrawPolygonPairs();
 
+	void DoPolygonColTests();
+
 
 private:
 	// pair to draw
 	std::vector<std::pair<Polygon, Polygon>> m_EventToDraw;
+	std::pair<Polygon, Polygon> pairOfRedPol;
 	int m_CurrentPolPair = 0;
 	bool m_isSave = true;
 

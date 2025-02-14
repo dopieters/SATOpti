@@ -1,4 +1,3 @@
-#include <random>
 #include <cassert> // assert
 #include <limits> // numeric_limits
 #include <functional>
@@ -8,16 +7,9 @@
 #include "Utilities.h"
 
 
+#include "Random.h"
 
 
-Vertex MakeRandomVertexPt() {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> dis(0.0, 1.0);
-
-	Vertex pt = { dis(gen), dis(gen) };
-	return pt;
-}
 
 bool CompareByAngle(const Vertex a, const Vertex b)
 {
@@ -26,7 +18,7 @@ bool CompareByAngle(const Vertex a, const Vertex b)
 
 
 Polygon MakeConvexPol(int nVertices) {
-	assert(nVertices >= 3 && "A minimum of 3 vertices is needed");
+	assert(nVertices >= 3 && "A minimum of 3 vertices is   ");
 
 	const int nVert = std::max(nVertices, 3);
 
@@ -37,12 +29,10 @@ Polygon MakeConvexPol(int nVertices) {
 	std::vector<float> x; x.reserve(nVert);
 	std::vector<float> y; y.reserve(nVert);
 	{
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_real_distribution<> disAxis(-1.f, 1.f);
+		static std::uniform_real_distribution<float> disAxis(-1.f, 1.f);
 		for (int ii = 0; ii < nVert; ++ii) {
-			x.push_back(disAxis(gen));
-			y.push_back(disAxis(gen));
+			x.push_back(RandomCustom::GetRdnFloatUniform(disAxis));
+			y.push_back(RandomCustom::GetRdnFloatUniform(disAxis));
 		}
 	}
 
@@ -63,14 +53,11 @@ Polygon MakeConvexPol(int nVertices) {
 	std::vector<float> xVec; xVec.reserve(nVert);
 	std::vector<float> yVec; yVec.reserve(nVert);
 	{
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::bernoulli_distribution bDis(0.5); // generate boolean
 		// xVec
 		{
 			float lastTop = minX; float lastBot = minX;
 			for (int ii = 1; ii < nVert-1; ++ii) {
-				if (bDis(gen)) {
+				if (RandomCustom::Get5050TrueFalse()) {
 					xVec.emplace_back(x[ii] - lastTop);
 					lastTop = x[ii];
 				}
@@ -89,7 +76,7 @@ Polygon MakeConvexPol(int nVertices) {
 
 			float lastTop = minY; float lastBot = minY;
 			for (int ii = 1; ii < nVert-1; ++ii) {
-				if (bDis(gen)) {
+				if (RandomCustom::Get5050TrueFalse()) {
 					yVec.emplace_back(y[ii] - lastTop);
 					lastTop = y[ii];
 				}
@@ -107,7 +94,7 @@ Polygon MakeConvexPol(int nVertices) {
 	// Randomly pair up the X- and Y-components
 	std::vector<Vector> vecs; vecs.reserve(nVert);
 	{
-		std::random_device rd;
+		std::random_device& rd = RandomCustom::GetRandomDevice();
 		std::shuffle(yVec.begin(), yVec.end(), rd);
 
 		for (int ii = 0; ii < nVert; ++ii) {
@@ -120,10 +107,8 @@ Polygon MakeConvexPol(int nVertices) {
 
 	// Lay them end-to-end to form a polygon
 	{
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_real_distribution<> disCenter(-2.f, 2.f);
-		float polX = disCenter(gen), polY = disCenter(gen);
+		static std::uniform_real_distribution<float> disCenter(-2.f, 2.f);
+		float polX = RandomCustom::GetRdnFloatUniform(disCenter), polY = RandomCustom::GetRdnFloatUniform(disCenter);
 		pol.baryCenter = { 0.f, 0.f };
 		for (const auto& vec : vecs) {
 			polX += vec.x;

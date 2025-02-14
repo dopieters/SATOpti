@@ -59,8 +59,6 @@ struct Point{
 typedef Point Vertex; 
 typedef Point Vector;
 
-Vertex MakeRandomVertexPt();
-
 //Function to sort points by angle 
 bool CompareByAngle(const Vertex a, const Vertex b);
 

@@ -237,58 +237,6 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 
 }
 
-bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
-{
-	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
-
-	std::vector<Vector> axisToTestAgainst;
-	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
-
-	auto computePolEdgesNorm = [&axisToTestAgainst](const Polygon& RESTRICT pol) {
-		const int nVert = pol.vertices.size();
-		int ii = 0;
-		for (; ii + 3 < nVert - 1; ii += 4) {
-			const Vector edgeVec1 = pol.vertices[ii] - pol.vertices[ii + 1];
-			const Vector edgeVec2 = pol.vertices[ii + 1] - pol.vertices[ii + 2];
-			const Vector edgeVec3 = pol.vertices[ii + 2] - pol.vertices[ii + 3];
-			const Vector edgeVec4 = pol.vertices[ii + 3] - pol.vertices[ii + 4];
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec1.y , edgeVec1.x });
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec2.y , edgeVec2.x });
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec3.y , edgeVec3.x });
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec4.y , edgeVec4.x });
-		}
-
-		for (; ii + 3 < nVert - 1; ii += 4) {
-			const Vector edgeVec = pol.vertices[ii] - pol.vertices[ii + 1];
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
-		}
-		};
-
-	// A's axes
-	{
-		computePolEdgesNorm(A);
-	}
-
-	// B's axes
-	{
-		computePolEdgesNorm(B);
-	}
-
-	// Test axes
-	{
-		for (const Vector axis : axisToTestAgainst) {
-			std::pair<float, float> AProj = { -GetMaxPolygonProjAxis(A, -axis), GetMaxPolygonProjAxis(A, axis) };
-			std::pair<float, float> BProj = { -GetMaxPolygonProjAxis(B, -axis), GetMaxPolygonProjAxis(B, axis) };
-			if (AProj.first > BProj.second || AProj.second < BProj.first) {
-				return false;
-			}
-
-		}
-	}
-
-	return true;
-}
-
 
 bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
@@ -313,13 +261,8 @@ bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 	Polygon C = PolygonComputeReducePol(A, barAxis, bMin, true);
 	Polygon D = PolygonComputeReducePol(B, barAxis, aMax, false);
 
+	return PolygonInterTestSAT(C, D);
 
-	if (C.vertices.size() == A.vertices.size() || D.vertices.size() == B.vertices.size()) {
-		return PolygonInterTestSAT(C, D);
-	}
-	else {
-		return PolygonInterTestSATForRedPol(C, D);
-	}
 }
 
 std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
@@ -494,7 +437,7 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 		// Define the lambda 
 		using LimitCompFunc = std::function<bool(float)>; 
 		// Use the defined type for the ternary operator 
-		constexpr float EPSILON = 1e-3;
+		constexpr float EPSILON = 1e-1;
 
 		LimitCompFunc limitComp = isAbvLmtPol ?
 			LimitCompFunc([&](float proj) { return (proj - limit) >= -EPSILON; }) :

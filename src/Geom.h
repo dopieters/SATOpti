@@ -77,7 +77,6 @@ Polygon MakeConvexPol(int nVertices);
 bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
-bool PolygonInterTestSATForRedPol(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 
 // first minProj, second maxProj

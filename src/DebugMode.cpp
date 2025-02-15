@@ -49,7 +49,7 @@ void DebugMode::RunDebugMethodConsistency()
 	{
 		Polygon A, B;
 		for (int nbTests = 0; nbTests < 10000; ++nbTests) {
-			A = MakeConvexPol(50); B = MakeConvexPol(50);
+			A = MakeConvexPol(20); B = MakeConvexPol(20);
 
 			bool bIntersectBForce = PolygonsInterTestBForce(A, B);
 			bool bIntersectSAT = PolygonInterTestSAT(A, B);

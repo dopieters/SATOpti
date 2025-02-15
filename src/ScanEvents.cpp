@@ -90,7 +90,7 @@ void ScanEvents::DoPolygonColTests()
 		// compute reduced polygon
 		Vector barAxis = CurrentPolPair.second.baryCenter - CurrentPolPair.first.baryCenter;
 
-		barAxis = barAxis / barAxis.Mag();
+		//barAxis = barAxis / barAxis.Mag();
 
 		auto AProj = GetMinMaxPolygonProjAxis(CurrentPolPair.first, barAxis);
 		auto BProj = GetMinMaxPolygonProjAxis(CurrentPolPair.second, barAxis);

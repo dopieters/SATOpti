@@ -243,7 +243,7 @@ bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
 
 	Vector barAxis = B.baryCenter - A.baryCenter;
-	barAxis = barAxis / barAxis.Mag();
+	//barAxis = barAxis / barAxis.Mag();
 	auto aMax = GetMaxPolygonProjAxis(A, barAxis);
 	auto bMin = - GetMaxPolygonProjAxis(B, -barAxis);
 
@@ -437,25 +437,24 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 		// Define the lambda 
 		using LimitCompFunc = std::function<bool(float)>; 
 		// Use the defined type for the ternary operator 
-		constexpr float EPSILON = 1e-3;
 
 		LimitCompFunc limitComp = isAbvLmtPol ?
-			LimitCompFunc([&](float proj) { return (proj - limit) >= -EPSILON; }) :
-			LimitCompFunc([&](float proj) { return (proj - limit) <= EPSILON; });
+			LimitCompFunc([&](float proj) { return (proj - limit) >= 0; }) :
+			LimitCompFunc([&](float proj) { return (proj - limit) <= 0; });
+
+		auto getProj = [&](int index) {
+			return A.vertices[index].x * axis.x + A.vertices[index].y * axis.y;
+			};
 
 
 		const int nVertA = A.vertices.size();
 
-		const float projPrev = A.vertices[nVertA - 1].x * axis.x + A.vertices[nVertA - 1].y * axis.y;
-		bool isPrevProjValid = limitComp(projPrev);
-		const float proj = A.vertices[0].x * axis.x + A.vertices[0].y * axis.y;
-		bool isProjValid = limitComp(proj);
+		bool isPrevProjValid = limitComp(getProj(nVertA-1));
+		bool isProjValid = limitComp(getProj(0));
 		for (int ii = 0; ii < nVertA; ++ii) {
 
 			{
-				const int nextInd = (ii + 1) % nVertA;
-				const float projNext = A.vertices[nextInd].x * axis.x + A.vertices[nextInd].y * axis.y;
-				const bool isNextProjValid = limitComp(projNext);
+				const bool isNextProjValid = limitComp(getProj((ii + 1) % nVertA));
 				if (isPrevProjValid || isProjValid || isNextProjValid) {
 					newPol.vertices.push_back(A.vertices[ii]);
 				}
@@ -464,6 +463,8 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 			}
 		}
 	}
+
+	assert(newPol.vertices.size() >= 3 && "A polygon should have at least 3 vertices");
 	return newPol;
 }
 

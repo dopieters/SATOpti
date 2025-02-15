@@ -191,27 +191,13 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	std::vector<Vector> axisToTestAgainst;
 	axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
 
-	auto computePolEdgesNorm = [&axisToTestAgainst](const Polygon& RESTRICT pol ) {
+	auto computePolEdgesNorm = [&axisToTestAgainst](const Polygon& RESTRICT pol) {
 		const int nVert = pol.vertices.size();
-		int ii = 0;
-		for (; ii+3 < nVert-1; ii+=4) {
-			const Vector edgeVec1 = pol.vertices[ii] - pol.vertices[ii + 1];
-			const Vector edgeVec2 = pol.vertices[ii+1] - pol.vertices[ii + 2];
-			const Vector edgeVec3 = pol.vertices[ii+2] - pol.vertices[ii + 3];
-			const Vector edgeVec4 = pol.vertices[ii+3] - pol.vertices[ii + 4];
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec1.y , edgeVec1.x });
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec2.y , edgeVec2.x });
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec3.y , edgeVec3.x });
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec4.y , edgeVec4.x });
+		for (int ii = 0; ii < nVert; ++ii) {
+			const int nextInd = (ii + 1) % nVert;
+			const Vector edgeVec = pol.vertices[nextInd] - pol.vertices[ii];
+			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y, edgeVec.x });
 		}
-
-		for (; ii + 3 < nVert - 1; ii += 4) {
-			const Vector edgeVec = pol.vertices[ii] - pol.vertices[ii + 1];
-			axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
-		}
-
-		const Vector edgeVec = pol.vertices[ii] - pol.vertices[0];
-		axisToTestAgainst.emplace_back(Vector{ -edgeVec.y , edgeVec.x });
 		};
 
 	// A's axes
@@ -222,7 +208,6 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 
 	// Test axes
 	{
-		//ScopeTimeMeasure test("Max");
 		for (const Vector axis : axisToTestAgainst) {
 			std::pair<float, float> AProj = { -GetMaxPolygonProjAxis(A, -axis), GetMaxPolygonProjAxis(A, axis) };
 			std::pair<float, float> BProj = { -GetMaxPolygonProjAxis(B, -axis), GetMaxPolygonProjAxis(B, axis) };
@@ -269,21 +254,12 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, cons
 {
 	assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
 
-	float minProj = std::numeric_limits<float>::infinity();
-	float maxProj = - std::numeric_limits<float>::infinity();
+	float minProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y;
+	float maxProj = minProj;
 
 	{
 		const int nVertA = A.vertices.size(); 
-		int ii = 0; // Loop unrolling 
-		for (; ii + 3 < nVertA; ii += 4) { 
-			const float proj1 = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y; 
-			const float proj2 = A.vertices[ii+1].x * d.x + A.vertices[ii+1].y * d.y; 
-			const float proj3 = A.vertices[ii+2].x * d.x + A.vertices[ii+2].y * d.y; 
-			const float proj4 = A.vertices[ii+3].x * d.x + A.vertices[ii+3].y * d.y; 
-			minProj = std::min({minProj, proj1, proj2, proj3, proj4}); 
-			maxProj = std::max({maxProj, proj1, proj2, proj3, proj4}); } 
-		// Process remaining vertices 
-		for (; ii < nVertA; ++ii) {
+		for (int ii = 0; ii < nVertA; ++ii) {
 			const float proj = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y;
 			minProj = std::min(minProj, proj);
 			maxProj = std::max(maxProj, proj);
@@ -298,16 +274,14 @@ float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 {
 	assert(A.vertices.size() >= 3  && "Pol min vertices is 3");
 
-	float maxProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y; 
-	const int nVertA = A.vertices.size(); 
-	int dir = (A.vertices[0].x * d.x + A.vertices[0].y * d.y) < 
-							(A.vertices[1].x * d.x + A.vertices[1].y * d.y) ? 1 : -1; 
-	int nextInd = (dir == 1) ? 1 : nVertA - 1; 
-	while (true) { 
-		float nexProj = A.vertices[nextInd].x * d.x + A.vertices[nextInd].y * d.y; 
-		// use < to avoid problem with collinear points
-		if (nexProj < maxProj || (nextInd == nVertA - 1 && dir == 1) || (nextInd == 0 && dir == -1)) break; 
-		maxProj = nexProj; nextInd += dir; 
+	float maxProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y;
+	const int nVertA = A.vertices.size();
+
+	for (int i = 1; i < nVertA; ++i) {
+		float proj = A.vertices[i].x * d.x + A.vertices[i].y * d.y;
+		if (proj > maxProj) {
+			maxProj = proj;
+		}
 	}
 
 	return maxProj;

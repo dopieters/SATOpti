@@ -66,15 +66,15 @@ void DrawWindow::DrawPolygon(const Polygon& A) const {
 	if (nVert < 3) return;
 
 	for (int ii = 0; ii < nVert - 1; ++ii) {
-		SDL_RenderDrawLine(m_renderer, A.vertices[ii].x * DRAW_SCALE + SHIFTX,
-			A.vertices[ii].y * DRAW_SCALE + SHIFTY,
-			A.vertices[ii + 1].x * DRAW_SCALE + SHIFTX,
-			A.vertices[ii + 1].y * DRAW_SCALE + SHIFTY);
+		SDL_RenderDrawLine(m_renderer, A.vertices[ii].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
+			A.vertices[ii].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y,
+			A.vertices[ii + 1].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
+			A.vertices[ii + 1].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y);
 	}
-	SDL_RenderDrawLine(m_renderer, A.vertices[nVert - 1].x * DRAW_SCALE + SHIFTX,
-		A.vertices[nVert - 1].y * DRAW_SCALE + SHIFTY,
-		A.vertices[0].x * DRAW_SCALE + SHIFTX,
-		A.vertices[0].y * DRAW_SCALE + SHIFTY);
+	SDL_RenderDrawLine(m_renderer, A.vertices[nVert - 1].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
+		A.vertices[nVert - 1].y * m_Zoom *DRAW_SCALE + SHIFTY + m_CameraPos.y,
+		A.vertices[0].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
+		A.vertices[0].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y);
 }
 
 void DrawWindow::DrawHyperPlanes(const Vector v, const float min, const float max) const
@@ -100,6 +100,37 @@ void DrawWindow::DrawHyperPlanes(const Vector v, const float min, const float ma
 		P1.y * DRAW_SCALE + SHIFTY,
 		P2.x * DRAW_SCALE + SHIFTX,
 		P2.y * DRAW_SCALE + SHIFTY);
+}
+
+void DrawWindow::CameraMovementEvents(const SDL_Event& event)
+{
+	switch (event.key.keysym.sym)
+	{
+	case SDLK_SPACE: // reset cammera
+		m_CameraPos.x = 0.f; m_CameraPos.y = 0.f;
+		m_Zoom = 1.f;
+		break;
+	case SDLK_a:
+		m_CameraPos.x -= 10;
+		break;
+	case SDLK_d:
+		m_CameraPos.x += 10;
+		break;
+	case SDLK_w:
+		m_CameraPos.y -= 10;
+		break;
+	case SDLK_s:
+		m_CameraPos.y += 10;
+		break;
+	case SDLK_z:
+		m_Zoom += 0.1;
+		break;
+	case SDLK_x:
+		m_Zoom -= 0.1;
+		break;
+		
+	}
+
 }
 
 

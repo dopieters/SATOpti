@@ -437,7 +437,7 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 		// Define the lambda 
 		using LimitCompFunc = std::function<bool(float)>; 
 		// Use the defined type for the ternary operator 
-		constexpr float EPSILON = 1e-1;
+		constexpr float EPSILON = 1e-3;
 
 		LimitCompFunc limitComp = isAbvLmtPol ?
 			LimitCompFunc([&](float proj) { return (proj - limit) >= -EPSILON; }) :

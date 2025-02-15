@@ -17,10 +17,17 @@ protected:
 	// Valid when m_window and m_isRunning 
 	// mem properly allocated
 	bool m_isValid = false;
-
 	
+	
+	Point m_CameraPos = { 0.f, 0.f };
+	float m_Zoom = 1.f;
+
 protected:
 	void DrawPolygon(const Polygon& A) const;
 	void DrawHyperPlanes(const Vector v, const float min, const float max) const;
+
+
+	void CameraMovementEvents(const SDL_Event& event);
+
 
 };

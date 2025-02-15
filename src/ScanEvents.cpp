@@ -53,6 +53,8 @@ void ScanEvents::ProcessEvents(){
 				++m_CurrentPolPair;
 				DoPolygonColTests();
 				break;
+			default:
+				CameraMovementEvents(event);
 			}
 		}
 	}
@@ -78,7 +80,7 @@ void ScanEvents::DoPolygonColTests()
 {
 	
 	if (m_CurrentPolPair >= 0 && m_CurrentPolPair < m_EventToDraw.size()) {
-		auto CurrentPolPair = m_EventToDraw[m_CurrentPolPair];
+		auto& CurrentPolPair = m_EventToDraw[m_CurrentPolPair];
 		DoPolygonsIntersects(CurrentPolPair.first, CurrentPolPair.second);
 
 

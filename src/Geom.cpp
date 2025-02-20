@@ -209,8 +209,8 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	// Test axes
 	{
 		for (const Vector axis : axisToTestAgainst) {
-			std::pair<float, float> AProj = { -GetMaxPolygonProjAxis(A, -axis), GetMaxPolygonProjAxis(A, axis) };
-			std::pair<float, float> BProj = { -GetMaxPolygonProjAxis(B, -axis), GetMaxPolygonProjAxis(B, axis) };
+			std::pair<float, float> AProj = GetMinMaxPolygonProjAxis(A, axis);// { -GetMaxPolygonProjAxis(A, -axis), GetMaxPolygonProjAxis(A, axis) };
+			std::pair<float, float> BProj = GetMinMaxPolygonProjAxis(B, axis); // { -GetMaxPolygonProjAxis(B, -axis), GetMaxPolygonProjAxis(B, axis) };
 			if (AProj.first > BProj.second || AProj.second < BProj.first) {
 				return false;
 			}

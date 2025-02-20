@@ -28,23 +28,25 @@ Note: The above description of SAT is valid for polygons in 2D. For polygons in 
 The current results, with 4835 intersections out of 10000 events, are:
 
 > Brute force with 100 vertices:
-> - Average time with intersection: 0.0116636ms
-> - Average time with no intersection: 0.0345464ms
->
+> - Number of polygon pair with intersect is : 4870
+> - Average time with inter : 0.0107166ms
+> - Average time with no inter : 0.0349345ms
+>   
 > SAT with 100 vertices:
-> - Average time with intersection: 0.10532ms
-> - Average time with no intersection: 0.00556886ms
->
+> - Number of polygon pair with intersect is : 4870
+> - Average time with inter : 0.0662554ms
+> - Average time with no inter : 0.00381162ms
+>   
 > SAT Opti with 100 vertices:
-> - Average time with intersection: 0.00999478ms
-> - Average time with no intersection: 0.000595533ms
+> - Average time with inter : 0.00582407ms
+> - Average time with no inter : 0.000538469ms
 
 ### Brute Force vs SAT Opti:
-The SAT Opti method gives similar results to the brute force method when the polygons are intersecting. However, the SAT Opti method is significantly faster when there is no intersection. This is mainly due to the principle behind both methods. The brute force method will exit early when an intersection is found, while the SAT Opti method will exit early when a separating axis is found.
+The SAT Opti method is around twice as fast as the brute force one when working with colliding polygons having each 100 vertices. In the case we are working with non-colliding one, the SAT method is way faster. That is because the brute force method is focusing on finding an intersection while the SAT algorithm just search for a separating axis.
 
 Both methods have their strengths, and one should choose the one appropriate to their usage.
 
-### SAT vs SAT Opti:
+### SAT vs SAT Opti (not latest results):
 The SAT Opti method is always faster than the SAT method. However, there are two parameters to take into account. The SAT Opti integrates two early exit checks that influence its results.
 
 SAT Opti checks one separating axis early, which makes the code significantly faster if there is no intersection. If both methods include this test, the results are much closer to each other:

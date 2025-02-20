@@ -25,15 +25,13 @@ Note: The above description of SAT is valid for polygons in 2D. For polygons in 
 
 
 ## Current Results
-The current results, with 4835 intersections out of 10000 events, are:
+The current results, with 4870 intersections out of 10000 events, are:
 
 > Brute force with 100 vertices:
-> - Number of polygon pair with intersect is : 4870
 > - Average time with inter : 0.0107166ms
 > - Average time with no inter : 0.0349345ms
 >   
 > SAT with 100 vertices:
-> - Number of polygon pair with intersect is : 4870
 > - Average time with inter : 0.0662554ms
 > - Average time with no inter : 0.00381162ms
 >   

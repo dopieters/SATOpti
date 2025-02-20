@@ -53,6 +53,7 @@ SAT Opti checks one separating axis early, which makes the code significantly fa
 
 > SAT with 100 vertices:
 > - Average time with no intersection: 0.000612266ms
+>   
 > SAT Opti with 100 vertices:
 > - Average time with no intersection: 0.000415229ms
 
@@ -60,6 +61,7 @@ SAT Opti checks if the barycenters are included in the other polygon, which help
 
 > SAT with 100 vertices:
 > - Average time with intersection: 0.108657ms
+>   
 > SAT Opti with 100 vertices:
 > - Average time with intersection: 0.0229175ms
 

@@ -30,9 +30,11 @@ The current results, with 4835 intersections out of 10000 events, are:
 > Brute force with 100 vertices:
 > - Average time with intersection: 0.0116636ms
 > - Average time with no intersection: 0.0345464ms
+>
 > SAT with 100 vertices:
 > - Average time with intersection: 0.10532ms
 > - Average time with no intersection: 0.00556886ms
+>
 > SAT Opti with 100 vertices:
 > - Average time with intersection: 0.00999478ms
 > - Average time with no intersection: 0.000595533ms

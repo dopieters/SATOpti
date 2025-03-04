@@ -19,6 +19,7 @@ public:
 private: 
 	bool m_QuitDebugMode = false;
 	void RunDrawDebugMode();
+	void RunDrawDebugGJK();
 	void RunDebugMethodConsistency();
 	void RunLoadEvent();
 	void Quit() { m_QuitDebugMode = true; }

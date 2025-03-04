@@ -3,10 +3,11 @@
 #include "Params.h"
 
 #include "MenuInterface.h"
+#include "EventIO.h"
 
 #include "DebugDrawMode.h"
 #include "ScanEvents.h"
-#include "EventIO.h"
+#include "DebugDrawModeGJK.h"
 
 
 DebugMode::DebugMode():
@@ -23,9 +24,10 @@ void DebugMode::Run()
 
 	MenuInterface menu("Choose a debug mode");
 	menu.AddOptions("Debug with drawing", [&]() {RunDrawDebugMode();});
+	menu.AddOptions("Draw GJK debug mode", [&]() {RunDrawDebugGJK();});
 	menu.AddOptions("Scan method consistency", [&]() {RunDebugMethodConsistency();});
 	menu.AddOptions("Load events", [&]() {RunLoadEvent();});
-	menu.AddOptions("Quit", [&]() {Quit();});
+	menu.AddOptions("Back to main menu", [&]() {Quit();});
 
 	while (!m_QuitDebugMode) {
 		menu.RunInterface();
@@ -37,6 +39,14 @@ void DebugMode::Run()
 void DebugMode::RunDrawDebugMode()
 {
 	DebugDrawMode db;
+	if (db.IsValid()) {
+		db.Run();
+	}
+}
+
+void DebugMode::RunDrawDebugGJK()
+{
+	DebugDrawModeGJK db;
 	if (db.IsValid()) {
 		db.Run();
 	}

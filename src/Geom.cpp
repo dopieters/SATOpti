@@ -127,11 +127,12 @@ Polygon MakeConvexPol(int nVertices) {
 
 bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
-	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
 
 	bool bInterBForce = measureExecutionTime(PolygonsInterTestBForce, "Brute force", A, B);
 	bool bInterSAT = measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
 	bool bInterSATOpti = measureExecutionTime(PolygonInterTestSATOpti, "New SAT", A, B);
+	bool bInterGJK = measureExecutionTime(PolygonInterTestGJK, "GJK", A, B);
 
 	/*assert(bInterBForce == bInterSAT && "Brut force and SAT test should agree with each other");
 	assert(bInterBForce == bInterSATOpti && "Brut force and SAT Opti test should agree with each other");*/
@@ -143,7 +144,7 @@ bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 
-	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
 
 	// Test if edges intersects
 	{
@@ -164,12 +165,12 @@ bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 		}
 	}
 
-	//// Test if point inside each other
-	//{
-	//	if (PolygonIncludeInEachOther(A, B)) {
-	//		return true;
-	//	}
-	//}
+	// Test if point inside each other
+	{
+		if (PolygonIncludeInEachOther(A, B)) {
+			return true;
+		}
+	}
 
 	// Test if one vertex is inside the other polygon
 	{
@@ -225,7 +226,7 @@ bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 
 bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
-	assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
 
 	Vector barAxis = B.baryCenter - A.baryCenter;
 	//barAxis = barAxis / barAxis.Mag();
@@ -248,6 +249,42 @@ bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 
 	return PolygonInterTestSAT(C, D);
 
+}
+
+bool PolygonInterTestGJK(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
+{
+	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+
+
+	auto SimplexSupportPoint = [&](const Vector d) {
+		return GetFurthestPoint(A, d) - GetFurthestPoint(B, -d);
+		};
+
+
+	
+	Simplex simp;
+	Vector dir = { 0, 1 }; // initial direction chosen arbitrarly
+	Point simpSup = SimplexSupportPoint(dir);
+	simp.Add(SimplexSupportPoint(simpSup));
+	dir = -simpSup;
+
+
+	while (true) {
+		simpSup = SimplexSupportPoint(dir);
+		if (DotProduct(simpSup, dir) < 0) {
+			return false;
+		}
+
+		simp.Add(simpSup);
+
+		if (simp.UpdateSimplex(dir)) {
+			return true;
+		}
+	}
+	
+
+
+	return false;
 }
 
 std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
@@ -285,6 +322,25 @@ float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 	}
 
 	return maxProj;
+}
+
+Point GetFurthestPoint(const Polygon& RESTRICT A, const Vector d)
+{
+
+	float maxProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y;
+	const int nVertA = A.vertices.size();
+
+	int MaxProjInd = 0;
+
+	for (int i = 1; i < nVertA; ++i) {
+		float proj = A.vertices[i].x * d.x + A.vertices[i].y * d.y;
+		if (proj > maxProj) {
+			maxProj = proj;
+			MaxProjInd = i;
+		}
+	}
+
+	return A.vertices[MaxProjInd];
 }
 
 float CrossProd2D(Vector Va, Vector Vb)
@@ -451,4 +507,74 @@ void Polygon::CalculateBarycenter()
 	
 	baryCenter = (1.f / vertices.size()) * baryCenter;
 
+}
+
+void Simplex::Add(const Point& vertex)
+{
+	vertices = { vertex, vertices[0], vertices[1]};
+	m_size = std::min(m_size + 1, 3);
+}
+
+bool Simplex::UpdateSimplex(Vector& dir)
+{
+	switch (m_size) {
+	case 0:
+	case 1:
+		assert(false && "Should never call this function with empty simplex");
+		break;
+	case 2: 
+		return LineUpdate(dir);
+	case 3:
+		return TriangleUpdate(dir);
+	}
+
+	return false;
+}
+
+bool Simplex::LineUpdate(Vector& dir)
+{
+	Point AB = vertices[1] - vertices[0];
+	Point AO = - vertices[0];
+
+	if (DotProduct(AB, AO) > 0) {
+		dir = { - AB.y, AB.x };
+
+		// two possibilities for the direction, 
+		// confirm the right one is chosen
+		if (DotProduct(AO, dir) < 0) {
+			dir = -dir;
+		}
+	}
+	else {
+		vertices = { vertices[0]};
+		dir = AO;
+		m_size = 1;
+	}
+
+	return false;
+}
+
+bool Simplex::TriangleUpdate(Vector& dir)
+{
+	Point AB = vertices[1] - vertices[0];
+	Point AC = vertices[2] - vertices[1];
+	Point AO = -vertices[0];
+
+	if (DotProduct(AB, AO) > 0) {
+		dir = { -AB.y, AB.x };
+		if (DotProduct(AO, dir) < 0) {
+			dir = -dir;
+		}
+		return false;
+	}
+	else if (DotProduct(AC, AO) > 0) {
+		dir = { -AC.y, AC.y };
+		if (DotProduct(AO, dir) < 0) {
+			dir = -dir;
+		}
+		return false;
+	}
+
+
+	return true;
 }

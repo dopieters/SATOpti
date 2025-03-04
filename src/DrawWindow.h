@@ -24,8 +24,12 @@ protected:
 
 protected:
 	void DrawPolygon(const Polygon& A) const;
+	void DrawSimplex(const Simplex& s) const;
 	void DrawHyperPlanes(const Vector v, const float min, const float max) const;
 
+	void DrawOriginAxis();
+
+	[[nodiscard]]Vector ToWindowsCoordinate(Vector v) const;
 
 	void CameraMovementEvents(const SDL_Event& event);
 

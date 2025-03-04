@@ -1,6 +1,7 @@
 #pragma once
 #include <vector> // std::vector
 #include <cmath> // std::sqrt
+#include <array>
 
 #if defined(_MSC_VER) 
 #define RESTRICT __restrict 
@@ -56,8 +57,14 @@ struct Point{
 	}
 };
 
+
 typedef Point Vertex; 
 typedef Point Vector;
+
+
+inline float DotProduct(const Vector A, const Vector B) {
+	return A.x * B.x + A.y * B.y;
+}
 
 //Function to sort points by angle 
 bool CompareByAngle(const Vertex a, const Vertex b);
@@ -70,6 +77,20 @@ struct Polygon
 	void CalculateBarycenter();
 };
 
+
+struct Simplex {
+	std::array<Point, 3> vertices;
+	int m_size = 0;
+
+	void Add(const Point& vertex);
+	bool UpdateSimplex(Vector &dir);
+
+	bool LineUpdate(Vector &dir);
+	bool TriangleUpdate(Vector& dir);
+
+};
+
+
 // algo based on Pavel-Valtr
 // https://cglab.ca/~sander/misc/ConvexGeneration/convex.html
 Polygon MakeConvexPol(int nVertices);
@@ -78,10 +99,12 @@ bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
+bool PolygonInterTestGJK(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 
 // first minProj, second maxProj
 std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d);
 float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d);
+Point GetFurthestPoint(const Polygon& RESTRICT A, const Vector d);
 
 float CrossProd2D(Vector Va, Vector Vb);
 

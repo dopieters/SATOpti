@@ -533,8 +533,8 @@ bool Simplex::UpdateSimplex(Vector& dir)
 
 bool Simplex::LineUpdate(Vector& dir)
 {
-	Point AB = vertices[1] - vertices[0];
-	Point AO = - vertices[0];
+	Vector AB = vertices[1] - vertices[0];
+	Vector AO = - vertices[0];
 
 	if (DotProduct(AB, AO) > 0) {
 		dir = { - AB.y, AB.x };
@@ -556,24 +556,36 @@ bool Simplex::LineUpdate(Vector& dir)
 
 bool Simplex::TriangleUpdate(Vector& dir)
 {
-	Point AB = vertices[1] - vertices[0];
-	Point AC = vertices[2] - vertices[1];
-	Point AO = -vertices[0];
 
-	if (DotProduct(AB, AO) > 0) {
-		dir = { -AB.y, AB.x };
-		if (DotProduct(AO, dir) < 0) {
-			dir = -dir;
-		}
+	Vector A = vertices[0];
+	Vector B = vertices[1];
+	Vector C = vertices[2];
+
+	double signedArea = 0.5 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+
+	Vector AB = B - A;
+	Vector AC = C - A;
+	Vector AO = -A;
+
+	Vector normalAB = (signedArea > 0) ? Vector{ AB.y, -AB.x }: Vector{ -AB.y, AB.x };
+	if (DotProduct(normalAB, AO) > 0) {
+		// Origin is outside AB, reduce simplex to AB
+		vertices = { A, B };
+		dir = normalAB; // Update direction to point toward origin
+		assert(!IsPointInsideTriangle({ 0,0 }, A, B, C) && "The point should be out of the triangle");
 		return false;
 	}
-	else if (DotProduct(AC, AO) > 0) {
-		dir = { -AC.y, AC.y };
-		if (DotProduct(AO, dir) < 0) {
-			dir = -dir;
-		}
+
+	// Check if the origin is outside AC
+	Vector normalAC = (signedArea > 0) ? Vector{ -AC.y, AC.x } : Vector{ AC.y, -AC.x };
+	if (DotProduct(normalAC, AO) > 0) {
+		// Origin is outside AC, reduce simplex to AC
+		vertices = { A, C };
+		dir = normalAC; // Update direction to point toward origin
+		assert(!IsPointInsideTriangle({ 0,0 }, A, B, C) && "The point should be out of the triangle");
 		return false;
 	}
+
 
 
 	return true;

@@ -51,7 +51,7 @@ void PerfTest::Run()
 			TestMethod("Brute force", pols, PolygonsInterTestBForce);
 			TestMethod("SAT", pols, PolygonInterTestSAT);
 			TestMethod("SAT Opti", pols, PolygonInterTestSATOpti);
-
+			TestMethod("GJK", pols, PolygonInterTestGJK);
 
 		}
 	}

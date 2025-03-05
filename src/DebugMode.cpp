@@ -64,8 +64,9 @@ void DebugMode::RunDebugMethodConsistency()
 			bool bIntersectBForce = PolygonsInterTestBForce(A, B);
 			bool bIntersectSAT = PolygonInterTestSAT(A, B);
 			bool bIntersectSATOpti = PolygonInterTestSATOpti(A, B);
+			bool bIntersectGJK = PolygonInterTestGJK(A, B);
 
-			if (bIntersectBForce != bIntersectSAT || bIntersectBForce != bIntersectSATOpti) {
+			if (bIntersectBForce != bIntersectSAT || bIntersectBForce != bIntersectSATOpti || bIntersectBForce != bIntersectGJK) {
 				std::cout << "Inconsistency Between methods observed" << std::endl;
 				pairToDraw.emplace_back(std::pair<Polygon, Polygon>(A, B));
 			}

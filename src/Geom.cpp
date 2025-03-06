@@ -251,6 +251,39 @@ bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT 
 
 }
 
+bool PolygonInterTestSATOptiItera(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
+{
+	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+
+	Vector barAxis = B.baryCenter - A.baryCenter;
+	//barAxis = barAxis / barAxis.Mag();
+	auto aMax = GetMaxPolygonProjAxis(A, barAxis);
+	auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
+
+	// check if barycenter inside each other
+	if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
+		return true;
+	}
+
+	// check if this axis is not a separating axis
+	if (aMax < bMin) {
+		return false;
+	}
+
+	// compute reduced polygon
+	Polygon C = PolygonComputeReducePol(A, barAxis, bMin, true);
+	Polygon D = PolygonComputeReducePol(B, barAxis, aMax, false);
+
+	if (C.vertices.size() >= A.vertices.size() || D.vertices.size() >= B.vertices.size()) {
+		return PolygonInterTestSAT(C, D);
+	}
+	else {
+		return PolygonInterTestSATOptiItera(C, D);
+	}
+
+	
+}
+
 bool PolygonInterTestGJK(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 {
 	assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
@@ -519,7 +552,7 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 
 
 		const int nVertA = A.vertices.size();
-
+		Point Barycenter{ 0,0 };
 		bool isPrevProjValid = limitComp(getProj(nVertA-1));
 		bool isProjValid = limitComp(getProj(0));
 		for (int ii = 0; ii < nVertA; ++ii) {
@@ -528,11 +561,14 @@ Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, co
 				const bool isNextProjValid = limitComp(getProj((ii + 1) % nVertA));
 				if (isPrevProjValid || isProjValid || isNextProjValid) {
 					newPol.vertices.push_back(A.vertices[ii]);
+					Barycenter += A.vertices[ii];
 				}
 				isPrevProjValid = isProjValid;
 				isProjValid = isNextProjValid;
 			}
 		}
+
+		newPol.baryCenter = (1.f / newPol.vertices.size()) * Barycenter;
 	}
 
 	assert(newPol.vertices.size() >= 3 && "A polygon should have at least 3 vertices");

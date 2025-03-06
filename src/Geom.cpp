@@ -326,19 +326,40 @@ float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 
 Point GetFurthestPoint(const Polygon& RESTRICT A, const Vector d)
 {
+	auto ProjIndAlongD = [&](int index) {
+		return A.vertices[index].x* d.x + A.vertices[index].y * d.y;
+		};
 
-	float maxProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y;
+	
 	const int nVertA = A.vertices.size();
-
+	
+	float maxProj = 0;
 	int MaxProjInd = 0;
-
-	for (int i = 1; i < nVertA; ++i) {
-		float proj = A.vertices[i].x * d.x + A.vertices[i].y * d.y;
-		if (proj > maxProj) {
-			maxProj = proj;
-			MaxProjInd = i;
+	int dir = 0;
+	{
+		float proj0 = ProjIndAlongD(0); float proj1 = ProjIndAlongD(1);
+		if (proj0 > proj1) {
+			maxProj = proj0;
+			dir = -1; 
+		}
+		else {
+			dir = 1;
+			maxProj = proj1;
+			MaxProjInd = 1;
 		}
 	}
+
+	int nextProjInd = MaxProjInd + dir;
+	if (nextProjInd < 0) nextProjInd += nVertA;
+	float newProj = ProjIndAlongD(nextProjInd);
+	while (maxProj <= newProj) {
+		maxProj = newProj;
+		MaxProjInd = nextProjInd;
+		nextProjInd += dir;
+		newProj = ProjIndAlongD(nextProjInd%nVertA);
+	}
+
+
 
 	return A.vertices[MaxProjInd];
 }

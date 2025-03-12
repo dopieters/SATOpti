@@ -10,38 +10,51 @@ PerfTest::PerfTest(int nCollTest, std::vector<int> NbsVerticesTest):
 
 
 template<typename Func>
-void PerfTest::TestMethod(const std::string& funcName, const std::vector<std::pair<Geom::Polygon, Geom::Polygon>>& pols, Func f)
+void PerfTest::TestMethod(const std::string& funcName, const std::vector<std::pair<Geom::Polygon, Geom::Polygon>>& pols, Func f, float& avgTimeInter, float& avgTimeNoInter)
 {
 	if (pols.empty()) return;
 
 	int nInter = 0;
-	float interTime = 0.f;
-	float noInterTime = 0.f;
+	avgTimeInter = 0.f;
+	avgTimeNoInter = 0.f;
 	for (const auto& pairPol : pols) {
 		const auto resBForces = measureExecutionTime(f, pairPol.first,
 			pairPol.second);
 
 		if (resBForces.first) {
-			interTime += resBForces.second;
+			avgTimeInter += resBForces.second;
 			++nInter;
 		}
 		else {
-			noInterTime += resBForces.second;
+			avgTimeNoInter += resBForces.second;
 		}
 	}
-	interTime = nInter == 0 ? -1 : interTime / nInter;
-	noInterTime = pols.size() - nInter == 0 ? -1 : noInterTime / nInter;
-	PrintResult(funcName, pols[0].first.vertices.size(), interTime, noInterTime, nInter);
+	avgTimeInter = nInter == 0 ? -1 : avgTimeInter / nInter;
+	avgTimeNoInter = pols.size() - nInter == 0 ? -1 : avgTimeNoInter / nInter;
+	PrintResult(funcName, pols[0].first.vertices.size(), avgTimeInter, avgTimeNoInter, nInter);
 }
 
 void PerfTest::Run()
 {
 
+	std::vector<float> BForceResInter(polNbVerticesTestList.size()), BForceResNoInter(polNbVerticesTestList.size());
+	std::vector<float> BSATInter(polNbVerticesTestList.size()), BSATNoInter(polNbVerticesTestList.size());
+	std::vector<float> BGJKInter(polNbVerticesTestList.size()), BGJKNoInter(polNbVerticesTestList.size());
+	std::vector<float> BSATRedPolInter(polNbVerticesTestList.size()), BSATRedPolNoInter(polNbVerticesTestList.size());
+	std::vector<float> BSATRedPolIterativeInter(polNbVerticesTestList.size()), BSATRedPolIterativeNoInter(polNbVerticesTestList.size());
+
+
+	std::vector<float> logX;
 	{
 		std::vector<std::pair<Geom::Polygon, Geom::Polygon>> pols;
 		pols.reserve(polNbVerticesTestList.size());
 
+
+		
+
+		int i = 0;
 		for (const auto nVert : polNbVerticesTestList) {
+			logX.push_back(std::log10(nVert));
 			pols.clear();
 
 			// gen polygons
@@ -50,14 +63,50 @@ void PerfTest::Run()
 			}
 
 			// measure times
-			TestMethod("Brute force", pols, Geom::PolygonsInterTestBForce);
-			TestMethod("SAT", pols, Geom::PolygonInterTestSAT);
-			TestMethod("SAT Opti", pols, Geom::PolygonInterTestSATOpti);
-			TestMethod("SAT Opti iterativ", pols, Geom::PolygonInterTestSATOptiItera);
-			TestMethod("GJK", pols, Geom::PolygonInterTestGJK);
+			//TestMethod("Brute force", pols, Geom::PolygonsInterTestBForce, BForceResInter[i], BForceResNoInter[i]);
+			//TestMethod("SAT", pols, Geom::PolygonInterTestSAT, BSATInter[i], BSATNoInter[i]);
+			TestMethod("SAT Opti", pols, Geom::PolygonInterTestSATOpti, BSATRedPolInter[i], BSATRedPolNoInter[i]);
+			TestMethod("SAT Opti iterativ", pols, Geom::PolygonInterTestSATOptiItera, BSATRedPolIterativeInter[i], BSATRedPolIterativeNoInter[i]);
+			TestMethod("GJK", pols, Geom::PolygonInterTestGJK, BGJKInter[i], BGJKNoInter[i]);
+
+			++i;
 
 		}
 	}
+
+	//Cresate new fig
+	auto figure = matplot::figure(true);
+	auto ax1 = matplot::subplot(2, 1, 0);
+	ax1->font_size(5);
+	std::vector<std::vector<float>> YInter;
+	//YInter.push_back(BForceResInter);
+	//YInter.push_back(BSATInter);
+	YInter.push_back(BSATRedPolInter);
+	YInter.push_back(BSATRedPolIterativeInter);
+	YInter.push_back(BGJKInter);
+
+	float max = std::max(BSATRedPolIterativeInter[polNbVerticesTestList.size()-1], BGJKInter[polNbVerticesTestList.size() - 1]);
+	matplot::ylim(ax1,{ 0, max });
+	ax1->title("Polygon intersecting");
+	matplot::plot(polNbVerticesTestList, YInter);
+	
+	auto l = ::matplot::legend(ax1,{ "SAT Opti", "Iterative", "GJK" });
+	l->location(matplot::legend::general_alignment::topleft);
+	l->font_size(5);
+	
+	std::vector<std::vector<float>> YNoInter;
+	//YNoInter.push_back(BForceResNoInter);
+	//YNoInter.push_back(BSATNoInter);
+	YNoInter.push_back(BSATRedPolNoInter);
+	YNoInter.push_back(BSATRedPolIterativeNoInter);
+	YNoInter.push_back(BGJKNoInter);
+	auto ax2 = matplot::subplot(2, 1, 1);
+	ax2->font_size(5);
+	ax2->title("Polygon not intersecting");
+
+	matplot::plot(polNbVerticesTestList, YNoInter);
+
+	matplot::show();
 
 }
 

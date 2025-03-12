@@ -6,5 +6,5 @@
 #include <string>
 
 
-void savePairsOfPolygons(const std::vector<std::pair<Polygon, Polygon>>& polygons, const std::string& filename);
-std::vector<std::pair<Polygon, Polygon>> loadPairsOfPolygons(const std::string& filename);
+void savePairsOfPolygons(const std::vector<std::pair<Geom::Polygon, Geom::Polygon>>& polygons, const std::string& filename);
+std::vector<std::pair<Geom::Polygon, Geom::Polygon>> loadPairsOfPolygons(const std::string& filename);

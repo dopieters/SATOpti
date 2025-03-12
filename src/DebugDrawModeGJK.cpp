@@ -87,8 +87,8 @@ void DebugDrawModeGJK::MakePolygons()
 	simp.m_size = 0;
 
 
-	pol1 = MakeConvexPol(100);
-	pol2 = MakeConvexPol(100);
+	pol1 = Geom::MakeConvexPol(100);
+	pol2 = Geom::MakeConvexPol(100);
 
 
 }
@@ -96,12 +96,12 @@ void DebugDrawModeGJK::MakePolygons()
 void DebugDrawModeGJK::UpdateSimplex()
 {
 	if (simp.m_size == 0) {
-		simp.Add(GetFurthestPoint(pol1, dir) - GetFurthestPoint(pol2, -dir));
+		simp.Add(Geom::GetFurthestPoint(pol1, dir) - Geom::GetFurthestPoint(pol2, -dir));
 		dir = -simp.vertices[0];
 	}
 	else {
-		const Point simpSup = GetFurthestPoint(pol1, dir) - GetFurthestPoint(pol2, -dir);
-		if (DotProduct(simpSup, dir) < 0) {
+		const Geom::Point simpSup = Geom::GetFurthestPoint(pol1, dir) - Geom::GetFurthestPoint(pol2, -dir);
+		if (Geom::DotProduct(simpSup, dir) < 0) {
 			std::cout << "No collision" << std::endl;
 			return;
 		}

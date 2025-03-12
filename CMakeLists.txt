@@ -1,4 +1,3 @@
-#https://github.com/meemknight/SDL2NoglCMakeSetup
 #Version 1.0.0
 
 cmake_minimum_required(VERSION 3.16)
@@ -23,7 +22,8 @@ project(SATOpti)
 
 set(SDL_STATIC ON)
 
-add_subdirectory(thirdparty/SDL)		#window opener
+add_subdirectory(thirdparty/SDL)		
+add_subdirectory(thirdparty/matplotplusplus)
 
 
 # MY_SOURCES is defined to be a list of all the source files for my game 
@@ -51,4 +51,4 @@ endif()
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL2-static)
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL2-static PUBLIC matplot)

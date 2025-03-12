@@ -1,5 +1,7 @@
 #include "PerfTest.h"
 #include "Utilities.h"
+#include "matplot/matplot.h"
+
 
 PerfTest::PerfTest(int nCollTest, std::vector<int> NbsVerticesTest):
 	nTest(nCollTest), polNbVerticesTestList(NbsVerticesTest)
@@ -8,7 +10,7 @@ PerfTest::PerfTest(int nCollTest, std::vector<int> NbsVerticesTest):
 
 
 template<typename Func>
-void PerfTest::TestMethod(const std::string& funcName, const std::vector<std::pair<Polygon, Polygon>>& pols, Func f)
+void PerfTest::TestMethod(const std::string& funcName, const std::vector<std::pair<Geom::Polygon, Geom::Polygon>>& pols, Func f)
 {
 	if (pols.empty()) return;
 
@@ -36,7 +38,7 @@ void PerfTest::Run()
 {
 
 	{
-		std::vector<std::pair<Polygon, Polygon>> pols;
+		std::vector<std::pair<Geom::Polygon, Geom::Polygon>> pols;
 		pols.reserve(polNbVerticesTestList.size());
 
 		for (const auto nVert : polNbVerticesTestList) {
@@ -44,18 +46,19 @@ void PerfTest::Run()
 
 			// gen polygons
 			for (int ii = 0; ii < nTest; ++ii) {
-				pols.push_back({ MakeConvexPol(nVert), MakeConvexPol(nVert) });
+				pols.push_back({ Geom::MakeConvexPol(nVert), Geom::MakeConvexPol(nVert) });
 			}
 
 			// measure times
-			TestMethod("Brute force", pols, PolygonsInterTestBForce);
-			TestMethod("SAT", pols, PolygonInterTestSAT);
-			TestMethod("SAT Opti", pols, PolygonInterTestSATOpti);
-			TestMethod("SAT Opti iterativ", pols, PolygonInterTestSATOptiItera);
-			TestMethod("GJK", pols, PolygonInterTestGJK);
+			TestMethod("Brute force", pols, Geom::PolygonsInterTestBForce);
+			TestMethod("SAT", pols, Geom::PolygonInterTestSAT);
+			TestMethod("SAT Opti", pols, Geom::PolygonInterTestSATOpti);
+			TestMethod("SAT Opti iterativ", pols, Geom::PolygonInterTestSATOptiItera);
+			TestMethod("GJK", pols, Geom::PolygonInterTestGJK);
 
 		}
 	}
+
 }
 
 void PerfTest::PrintResult(const std::string& funcName, int polVert, float timeInter, float timeNoInter, int nInter) const

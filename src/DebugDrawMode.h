@@ -3,7 +3,6 @@
 #include "Geom.h"
 #include "DrawWindow.h"
 
-struct Polygon;
 
 class DebugDrawMode final: public DrawWindow
 {
@@ -39,9 +38,9 @@ private:
 	void ProcessEvents();
 
 	void MakePolygons();
-	Polygon pol1;
-	Polygon pol2;
+	Geom::Polygon pol1;
+	Geom::Polygon pol2;
 
-	Polygon pol1Red;
-	Polygon pol2Red;
+	Geom::Polygon pol1Red;
+	Geom::Polygon pol2Red;
 };

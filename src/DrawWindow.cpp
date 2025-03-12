@@ -60,7 +60,7 @@ DrawWindow::~DrawWindow()
 
 
 
-void DrawWindow::DrawPolygon(const Polygon& A) const {
+void DrawWindow::DrawPolygon(const Geom::Polygon& A) const {
 	const int nVert = A.vertices.size();
 
 	if (nVert < 3) return;
@@ -77,28 +77,28 @@ void DrawWindow::DrawPolygon(const Polygon& A) const {
 		A.vertices[0].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y);
 }
 
-void DrawWindow::DrawSimplex(const Simplex& s) const
+void DrawWindow::DrawSimplex(const Geom::Simplex& s) const
 {
 	switch ( s.m_size)
 	{
 	case 0:
 		return;
 	case 1:
-		const Point p = ToWindowsCoordinate(s.vertices[0]);
+		const Geom::Point p = ToWindowsCoordinate(s.vertices[0]);
 		SDL_RenderDrawPoint(m_renderer, p.x, p.y);
 		break;
 	case 2:
 	{
-		const Point p1 = ToWindowsCoordinate(s.vertices[0]);
-		const Point p2 = ToWindowsCoordinate(s.vertices[1]);
+		const Geom::Point p1 = ToWindowsCoordinate(s.vertices[0]);
+		const Geom::Point p2 = ToWindowsCoordinate(s.vertices[1]);
 		SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p2.x, p2.y);
 	}
 		break;
 	case 3:
 	{
-		const Point p1 = ToWindowsCoordinate(s.vertices[0]);
-		const Point p2 = ToWindowsCoordinate(s.vertices[1]);
-		const Point p3 = ToWindowsCoordinate(s.vertices[2]);
+		const Geom::Point p1 = ToWindowsCoordinate(s.vertices[0]);
+		const Geom::Point p2 = ToWindowsCoordinate(s.vertices[1]);
+		const Geom::Point p3 = ToWindowsCoordinate(s.vertices[2]);
 		SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p2.x, p2.y);
 		SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p3.x, p3.y);
 		SDL_RenderDrawLine(m_renderer, p3.x, p3.y, p2.x, p2.y);
@@ -111,13 +111,13 @@ void DrawWindow::DrawSimplex(const Simplex& s) const
 
 }
 
-void DrawWindow::DrawHyperPlanes(const Vector v, const float min, const float max) const
+void DrawWindow::DrawHyperPlanes(const Geom::Vector v, const float min, const float max) const
 {
-	Vector barAxisPerp = { -v.y, v.x };
+	Geom::Vector barAxisPerp = { -v.y, v.x };
 
-	Point Pmax = max * v;
-	Point P1 = Pmax + 100 * barAxisPerp;
-	Point P2 = Pmax - 100 * barAxisPerp;
+	Geom::Point Pmax = max * v;
+	Geom::Point P1 = Pmax + 100 * barAxisPerp;
+	Geom::Point P2 = Pmax - 100 * barAxisPerp;
 
 	// first plane
 	SDL_RenderDrawLine(m_renderer, P1.x * DRAW_SCALE + SHIFTX,
@@ -125,7 +125,7 @@ void DrawWindow::DrawHyperPlanes(const Vector v, const float min, const float ma
 		P2.x * DRAW_SCALE + SHIFTX,
 		P2.y * DRAW_SCALE + SHIFTY);
 
-	Point Pmin = min * v;
+	Geom::Point Pmin = min * v;
 	P1 = Pmin + 100 * barAxisPerp;
 	P2 = Pmin - 100 * barAxisPerp;
 
@@ -138,15 +138,15 @@ void DrawWindow::DrawHyperPlanes(const Vector v, const float min, const float ma
 
 void DrawWindow::DrawOriginAxis()
 {
-	Point y0 = ToWindowsCoordinate({ 0, -1000 }); Point y1 = ToWindowsCoordinate({ 0, 1000 });
-	Point x0 = ToWindowsCoordinate({ -1000, 0 }); Point x1 = ToWindowsCoordinate({ 1000, 0 });
+	Geom::Point y0 = ToWindowsCoordinate({ 0, -1000 }); Geom::Point y1 = ToWindowsCoordinate({ 0, 1000 });
+	Geom::Point x0 = ToWindowsCoordinate({ -1000, 0 }); Geom::Point x1 = ToWindowsCoordinate({ 1000, 0 });
 
 	SDL_RenderDrawLine(m_renderer, x0.x, x0.y, x1.x, x1.y);
 	SDL_RenderDrawLine(m_renderer, y0.x, y0.y, y1.x, y1.y);
 
 }
 
-Vector DrawWindow::ToWindowsCoordinate(Vector v) const
+Geom::Vector DrawWindow::ToWindowsCoordinate(Geom::Vector v) const
 {
 	return { v.x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x, v.y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y };
 }

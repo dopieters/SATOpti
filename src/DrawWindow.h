@@ -19,17 +19,17 @@ protected:
 	bool m_isValid = false;
 	
 	
-	Point m_CameraPos = { 0.f, 0.f };
+	Geom::Point m_CameraPos = { 0.f, 0.f };
 	float m_Zoom = 1.f;
 
 protected:
-	void DrawPolygon(const Polygon& A) const;
-	void DrawSimplex(const Simplex& s) const;
-	void DrawHyperPlanes(const Vector v, const float min, const float max) const;
+	void DrawPolygon(const Geom::Polygon& A) const;
+	void DrawSimplex(const Geom::Simplex& s) const;
+	void DrawHyperPlanes(const Geom::Vector v, const float min, const float max) const;
 
 	void DrawOriginAxis();
 
-	[[nodiscard]]Vector ToWindowsCoordinate(Vector v) const;
+	[[nodiscard]] Geom::Vector ToWindowsCoordinate(Geom::Vector v) const;
 
 	void CameraMovementEvents(const SDL_Event& event);
 

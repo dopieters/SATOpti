@@ -4,7 +4,7 @@
 #include <iostream> 
 
 
-void savePairsOfPolygons(const std::vector<std::pair<Polygon, Polygon>>& polygons, const std::string& filename) {
+void savePairsOfPolygons(const std::vector<std::pair<Geom::Polygon, Geom::Polygon>>& polygons, const std::string& filename) {
     std::ofstream outFile(filename, std::ios::binary);
     if (!outFile) {
         std::cerr << "Error opening file for writing." << std::endl;
@@ -14,10 +14,10 @@ void savePairsOfPolygons(const std::vector<std::pair<Polygon, Polygon>>& polygon
     size_t numPairs = polygons.size();
     outFile.write(reinterpret_cast<const char*>(&numPairs), sizeof(numPairs));
 
-    auto savePolygon = [&outFile](const Polygon& polygon) {
+    auto savePolygon = [&outFile](const Geom::Polygon& polygon) {
         size_t numPoints = polygon.vertices.size();
         outFile.write(reinterpret_cast<const char*>(&numPoints), sizeof(numPoints));
-        outFile.write(reinterpret_cast<const char*>(polygon.vertices.data()), numPoints * sizeof(Point));
+        outFile.write(reinterpret_cast<const char*>(polygon.vertices.data()), numPoints * sizeof(Geom::Point));
         };
 
     for (const auto& pair : polygons) {
@@ -28,7 +28,7 @@ void savePairsOfPolygons(const std::vector<std::pair<Polygon, Polygon>>& polygon
     outFile.close();
 }
 
-std::vector<std::pair<Polygon, Polygon>> loadPairsOfPolygons(const std::string& filename) {
+std::vector<std::pair<Geom::Polygon, Geom::Polygon>> loadPairsOfPolygons(const std::string& filename) {
     std::ifstream inFile(filename, std::ios::binary);
     if (!inFile) {
         std::cerr << "Error opening file for reading." << std::endl;
@@ -42,14 +42,14 @@ std::vector<std::pair<Polygon, Polygon>> loadPairsOfPolygons(const std::string& 
         size_t numPoints;
         inFile.read(reinterpret_cast<char*>(&numPoints), sizeof(numPoints));
 
-        Polygon polygon;
+        Geom::Polygon polygon;
         polygon.vertices.resize(numPoints);
-        inFile.read(reinterpret_cast<char*>(polygon.vertices.data()), numPoints * sizeof(Point));
+        inFile.read(reinterpret_cast<char*>(polygon.vertices.data()), numPoints * sizeof(Geom::Point));
         polygon.CalculateBarycenter();
         return polygon;
         };
 
-    std::vector<std::pair<Polygon, Polygon>> polygons(numPairs);
+    std::vector<std::pair<Geom::Polygon, Geom::Polygon>> polygons(numPairs);
     for (size_t i = 0; i < numPairs; ++i) {
         polygons[i].first = loadPolygon();
         polygons[i].second = loadPolygon();

@@ -18,11 +18,11 @@ private:
 	void MakePolygons();
 	void UpdateSimplex();
 
-	Polygon pol1;
-	Polygon pol2;
+	Geom::Polygon pol1;
+	Geom::Polygon pol2;
 
-	Simplex simp;
+	Geom::Simplex simp;
 
-	Vector dir = { 0, 1 };
+	Geom::Vector dir = { 0, 1 };
 
 };

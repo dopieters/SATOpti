@@ -9,7 +9,7 @@ inline void ClearTerminal() {
 }
 
 template <typename Func>
-inline bool measureExecutionTime(Func func, const std::string& funcName, Polygon A, Polygon B) {
+inline bool measureExecutionTime(Func func, const std::string& funcName, Geom::Polygon A, Geom::Polygon B) {
 	auto start = std::chrono::high_resolution_clock::now();
 	bool isIntersect = func(A, B);
 	auto end = std::chrono::high_resolution_clock::now();
@@ -20,7 +20,7 @@ inline bool measureExecutionTime(Func func, const std::string& funcName, Polygon
 }
 
 template <typename Func>
-inline std::pair<bool, float> measureExecutionTime(Func func, Polygon A, Polygon B) {
+inline std::pair<bool, float> measureExecutionTime(Func func, Geom::Polygon A, Geom::Polygon B) {
 	auto start = std::chrono::high_resolution_clock::now();
 	bool isIntersect = func(A, B);
 	auto end = std::chrono::high_resolution_clock::now();

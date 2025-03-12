@@ -11,6 +11,7 @@
 #endif
 
 
+namespace Geom{
 constexpr double pi = 3.14159265358979323846;
 
 struct Point{
@@ -69,6 +70,7 @@ inline float DotProduct(const Vector A, const Vector B) {
 //Function to sort points by angle 
 bool CompareByAngle(const Vertex a, const Vertex b);
 
+
 struct Polygon
 {
 	std::vector<Vertex> vertices;
@@ -120,3 +122,4 @@ bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT pol, const int lef
 bool IsPointInsideTriangle(const Point A, const Vertex v0, const Vertex v1, const Vertex v2);
 
 Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, const float limit, const bool isAbvLimit);
+}

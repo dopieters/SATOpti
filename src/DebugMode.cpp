@@ -54,24 +54,24 @@ void DebugMode::RunDrawDebugGJK()
 
 void DebugMode::RunDebugMethodConsistency()
 {
-	std::vector<std::pair<Polygon, Polygon>> pairToDraw;
+	std::vector<std::pair<Geom::Polygon, Geom::Polygon>> pairToDraw;
 
 	{
-		Polygon A, B;
+		Geom::Polygon A, B;
 		for (int nbTests = 0; nbTests < 10000; ++nbTests) {
-			A = MakeConvexPol(20); B = MakeConvexPol(20);
+			A = Geom::MakeConvexPol(20); B = Geom::MakeConvexPol(20);
 
-			bool bIntersectBForce = PolygonsInterTestBForce(A, B);
-			bool bIntersectSAT = PolygonInterTestSAT(A, B);
-			bool bIntersectSATOpti = PolygonInterTestSATOpti(A, B);
-			bool bIntersectGJK = PolygonInterTestGJK(A, B);
-			bool bIntersectSATOptiItVertex = PolygonInterTestSATOptiItera(A, B);
+			bool bIntersectBForce = Geom::PolygonsInterTestBForce(A, B);
+			bool bIntersectSAT = Geom::PolygonInterTestSAT(A, B);
+			bool bIntersectSATOpti = Geom::PolygonInterTestSATOpti(A, B);
+			bool bIntersectGJK = Geom::PolygonInterTestGJK(A, B);
+			bool bIntersectSATOptiItVertex = Geom::PolygonInterTestSATOptiItera(A, B);
 
 			if (bIntersectBForce != bIntersectSAT || bIntersectBForce != bIntersectSATOpti || bIntersectBForce != bIntersectGJK
 				|| bIntersectBForce != bIntersectSATOptiItVertex
 				) {
 				std::cout << "Inconsistency Between methods observed" << std::endl;
-				pairToDraw.emplace_back(std::pair<Polygon, Polygon>(A, B));
+				pairToDraw.emplace_back(std::pair<Geom::Polygon, Geom::Polygon>(A, B));
 			}
 		}
 	}

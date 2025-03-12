@@ -4,7 +4,7 @@
 
 
 
-ScanEvents::ScanEvents(std::vector<std::pair<Polygon, Polygon>> pairPolygons, bool save):
+ScanEvents::ScanEvents(std::vector<std::pair<Geom::Polygon, Geom::Polygon>> pairPolygons, bool save):
 DrawWindow(),
 m_EventToDraw(pairPolygons),
 m_isSave(save)
@@ -88,7 +88,7 @@ void ScanEvents::DoPolygonColTests()
 
 	
 		// compute reduced polygon
-		Vector barAxis = CurrentPolPair.second.baryCenter - CurrentPolPair.first.baryCenter;
+		Geom::Vector barAxis = CurrentPolPair.second.baryCenter - CurrentPolPair.first.baryCenter;
 
 		//barAxis = barAxis / barAxis.Mag();
 

@@ -74,39 +74,48 @@ void PerfTest::Run()
 		}
 	}
 
-	//Cresate new fig
-	auto figure = matplot::figure(true);
-	auto ax1 = matplot::subplot(2, 1, 0);
-	ax1->font_size(5);
-	std::vector<std::vector<float>> YInter;
-	//YInter.push_back(BForceResInter);
-	//YInter.push_back(BSATInter);
-	YInter.push_back(BSATRedPolInter);
-	YInter.push_back(BSATRedPolIterativeInter);
-	YInter.push_back(BGJKInter);
 
-	float max = std::max(BSATRedPolIterativeInter[polNbVerticesTestList.size()-1], BGJKInter[polNbVerticesTestList.size() - 1]);
-	matplot::ylim(ax1,{ 0, max });
-	ax1->title("Polygon intersecting");
-	matplot::plot(polNbVerticesTestList, YInter);
+	auto DrawResult = [&](const std::vector<std::vector<float>>& Yaxis, std::string title, float YaxisMax = -1) {
+		//Create new fig
+		auto figure = matplot::figure(true);
+		figure->size(1200, 800);
+		if (YaxisMax> 0) matplot::ylim({ 0, YaxisMax });
+		matplot::title(title);
+		matplot::ylabel("Time (ms)");
+		matplot::xlabel("N_{vertices}");
+		matplot::plot(polNbVerticesTestList, Yaxis);
+		matplot::xticks({ 0, 1000, 5000, 10000 });
+		auto l = ::matplot::legend({ "SAT Opti", "Iterative", "GJK" });
+		l->location(matplot::legend::general_alignment::topleft);
+		l->font_size(10);
+		matplot::save(title +".png");
+		matplot::show();
+
+		};
 	
-	auto l = ::matplot::legend(ax1,{ "SAT Opti", "Iterative", "GJK" });
-	l->location(matplot::legend::general_alignment::topleft);
-	l->font_size(5);
-	
-	std::vector<std::vector<float>> YNoInter;
-	//YNoInter.push_back(BForceResNoInter);
-	//YNoInter.push_back(BSATNoInter);
-	YNoInter.push_back(BSATRedPolNoInter);
-	YNoInter.push_back(BSATRedPolIterativeNoInter);
-	YNoInter.push_back(BGJKNoInter);
-	auto ax2 = matplot::subplot(2, 1, 1);
-	ax2->font_size(5);
-	ax2->title("Polygon not intersecting");
+	// Draw results when there is intersection
+	{
+		std::vector<std::vector<float>> YInter;
+		//YInter.push_back(BForceResInter);
+		//YInter.push_back(BSATInter);
+		YInter.push_back(BSATRedPolInter);
+		YInter.push_back(BSATRedPolIterativeInter);
+		YInter.push_back(BGJKInter);
+		DrawResult(YInter, "Polygon intersecting", std::max(BSATRedPolIterativeInter[polNbVerticesTestList.size() - 1], BGJKInter[polNbVerticesTestList.size() - 1]));
 
-	matplot::plot(polNbVerticesTestList, YNoInter);
+	}
 
-	matplot::show();
+	// Draw results when there is no intersection
+	{
+		std::vector<std::vector<float>> YNoInter;
+		//YNoInter.push_back(BForceResNoInter);
+		//YNoInter.push_back(BSATNoInter);
+		YNoInter.push_back(BSATRedPolNoInter);
+		YNoInter.push_back(BSATRedPolIterativeNoInter);
+		YNoInter.push_back(BGJKNoInter);
+
+		DrawResult(YNoInter, "Polygon not intersecting");
+	}
 
 }
 

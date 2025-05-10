@@ -228,15 +228,15 @@ namespace Geom {
 	{
 		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
 
-		Vector barAxis = B.baryCenter - A.baryCenter;
-		//barAxis = barAxis / barAxis.Mag();
-		auto aMax = GetMaxPolygonProjAxis(A, barAxis);
-		auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
-
 		// check if barycenter inside each other
 		if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
 			return true;
 		}
+
+		Vector barAxis = B.baryCenter - A.baryCenter;
+		//barAxis = barAxis / barAxis.Mag();
+		auto aMax = GetMaxPolygonProjAxis(A, barAxis);
+		auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
 
 		// check if this axis is not a separating axis
 		if (aMax < bMin) {
@@ -255,15 +255,15 @@ namespace Geom {
 	{
 		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
 
-		Vector barAxis = B.baryCenter - A.baryCenter;
-		//barAxis = barAxis / barAxis.Mag();
-		auto aMax = GetMaxPolygonProjAxis(A, barAxis);
-		auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
-
 		// check if barycenter inside each other
 		if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
 			return true;
 		}
+
+		Vector barAxis = B.baryCenter - A.baryCenter;
+		//barAxis = barAxis / barAxis.Mag();
+		auto aMax = GetMaxPolygonProjAxis(A, barAxis);
+		auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
 
 		// check if this axis is not a separating axis
 		if (aMax < bMin) {

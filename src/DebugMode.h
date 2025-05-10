@@ -22,6 +22,7 @@ private:
 	void RunDrawDebugGJK();
 	void RunDebugMethodConsistency();
 	void RunLoadEvent();
+	void VertexReductionTendency();
 	void Quit() { m_QuitDebugMode = true; }
 
 

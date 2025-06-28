@@ -31,7 +31,7 @@ void PerfTest::TestMethod(const std::string& funcName, const std::vector<std::pa
 	}
 	avgTimeInter = nInter == 0 ? -1 : avgTimeInter / nInter;
 	avgTimeNoInter = pols.size() - nInter == 0 ? -1 : avgTimeNoInter / nInter;
-	PrintResult(funcName, pols[0].first.vertices.size(), avgTimeInter, avgTimeNoInter, nInter);
+	//PrintResult(funcName, pols[0].first.vertices.size(), avgTimeInter, avgTimeNoInter, nInter);
 }
 
 void PerfTest::Run()
@@ -64,9 +64,9 @@ void PerfTest::Run()
 
 			// measure times
 			//TestMethod("Brute force", pols, Geom::PolygonsInterTestBForce, BForceResInter[i], BForceResNoInter[i]);
-			TestMethod("SAT", pols, Geom::PolygonInterTestSAT, BSATInter[i], BSATNoInter[i]);
-			TestMethod("SAT Opti", pols, Geom::PolygonInterTestSATOpti, BSATRedPolInter[i], BSATRedPolNoInter[i]);
-			TestMethod("SAT Opti iterativ", pols, Geom::PolygonInterTestSATOptiItera, BSATRedPolIterativeInter[i], BSATRedPolIterativeNoInter[i]);
+			//TestMethod("SAT", pols, Geom::PolygonInterTestSAT, BSATInter[i], BSATNoInter[i]);
+			//TestMethod("SAT Opti", pols, Geom::PolygonInterTestSATOpti, BSATRedPolInter[i], BSATRedPolNoInter[i]);
+			TestMethod("SAT Opti iterative", pols, Geom::PolygonInterTestSATOptiItera, BSATRedPolIterativeInter[i], BSATRedPolIterativeNoInter[i]);
 			TestMethod("GJK", pols, Geom::PolygonInterTestGJK, BGJKInter[i], BGJKNoInter[i]);
 
 			++i;
@@ -93,32 +93,32 @@ void PerfTest::Run()
 		matplot::show();
 
 		};
-	
-	// Draw results when there is intersection
-	{
-		std::vector<std::vector<float>> YInter;
-		std::vector<std::string> legend;
-		//YInter.push_back(BForceResInter); legend.push_back("Brute force");
-		YInter.push_back(BSATInter);legend.push_back("SAT");
-		YInter.push_back(BSATRedPolInter); legend.push_back("SAT Opti");
-		YInter.push_back(BSATRedPolIterativeInter); legend.push_back("Iterative");		
-		YInter.push_back(BGJKInter); legend.push_back("GJK");
-		DrawResult(YInter, "Polygon intersecting", legend);
-			//std::max(BSATRedPolIterativeInter[polNbVerticesTestList.size() - 1], BGJKInter[polNbVerticesTestList.size() - 1]));
+	//
+	//// Draw results when there is intersection
+	//{
+	//	std::vector<std::vector<float>> YInter;
+	//	std::vector<std::string> legend;
+	//	//YInter.push_back(BForceResInter); legend.push_back("Brute force");
+	//	YInter.push_back(BSATInter);legend.push_back("SAT");
+	//	YInter.push_back(BSATRedPolInter); legend.push_back("SAT Opti");
+	//	YInter.push_back(BSATRedPolIterativeInter); legend.push_back("Iterative");		
+	//	YInter.push_back(BGJKInter); legend.push_back("GJK");
+	//	DrawResult(YInter, "Polygon intersecting", legend);
+	//		//std::max(BSATRedPolIterativeInter[polNbVerticesTestList.size() - 1], BGJKInter[polNbVerticesTestList.size() - 1]));
 
-	}
+	//}
 
-	// Draw zoom version on small Y when there is no intersection
-	{
-		std::vector<std::vector<float>> YInter;
-		std::vector<std::string> legend;
-		YInter.push_back(std::vector<float>(BSATInter.begin(), BSATInter.begin() + 5));legend.push_back("SAT");
-		YInter.push_back(std::vector<float>(BSATRedPolInter.begin(), BSATRedPolInter.begin() + 5)); legend.push_back("SAT Opti");
-		YInter.push_back(std::vector<float>(BSATRedPolIterativeInter.begin(), BSATRedPolIterativeInter.begin() + 5)); legend.push_back("Iterative");
-		YInter.push_back(std::vector<float>(BGJKInter.begin(), BGJKInter.begin() + 5)); legend.push_back("Iterative");
+	//// Draw zoom version on small Y when there is no intersection
+	//{
+	//	std::vector<std::vector<float>> YInter;
+	//	std::vector<std::string> legend;
+	//	YInter.push_back(std::vector<float>(BSATInter.begin(), BSATInter.begin() + 5));legend.push_back("SAT");
+	//	YInter.push_back(std::vector<float>(BSATRedPolInter.begin(), BSATRedPolInter.begin() + 5)); legend.push_back("SAT Opti");
+	//	YInter.push_back(std::vector<float>(BSATRedPolIterativeInter.begin(), BSATRedPolIterativeInter.begin() + 5)); legend.push_back("Iterative");
+	//	YInter.push_back(std::vector<float>(BGJKInter.begin(), BGJKInter.begin() + 5)); legend.push_back("GJK");
 
-		DrawResult(YInter, "Polygon intersecting zoomed", legend);
-	}
+	//	DrawResult(YInter, "Polygon intersecting zoomed", legend);
+	//}
 
 
 	// Draw results when there is intersection with only GJK and SAT opti
@@ -127,34 +127,34 @@ void PerfTest::Run()
 		std::vector<std::string> legend;
 		YInter.push_back(BSATRedPolIterativeInter); legend.push_back("Iterative");
 		YInter.push_back(BGJKInter); legend.push_back("GJK");
-		DrawResult(YInter, "Polygon intersecting", legend);
+		DrawResult(YInter, "Polygon Intersecting", legend);
 	}
 
 
-	// Draw results when there is no intersection
-	{
-		std::vector<std::vector<float>> YNoInter;
-		std::vector<std::string> legend;
-		//YNoInter.push_back(BForceResNoInter); legend.push_back("Brute force");
-		YNoInter.push_back(BSATInter);legend.push_back("SAT");
-		YNoInter.push_back(BSATRedPolNoInter); legend.push_back("SAT Opti");
-		YNoInter.push_back(BSATRedPolIterativeNoInter); legend.push_back("Iterative");
-		YNoInter.push_back(BGJKNoInter); legend.push_back("GJK");
+	//// Draw results when there is no intersection
+	//{
+	//	std::vector<std::vector<float>> YNoInter;
+	//	std::vector<std::string> legend;
+	//	//YNoInter.push_back(BForceResNoInter); legend.push_back("Brute force");
+	//	YNoInter.push_back(BSATInter);legend.push_back("SAT");
+	//	YNoInter.push_back(BSATRedPolNoInter); legend.push_back("SAT Opti");
+	//	YNoInter.push_back(BSATRedPolIterativeNoInter); legend.push_back("Iterative");
+	//	YNoInter.push_back(BGJKNoInter); legend.push_back("GJK");
 
-		DrawResult(YNoInter, "Polygon not intersecting", legend);
-	}
+	//	DrawResult(YNoInter, "Polygon not intersecting", legend);
+	//}
 
-	// Draw zoom version on small Y when there is no intersection
-	{
-		std::vector<std::vector<float>> YNoInter;
-		std::vector<std::string> legend;
-		YNoInter.push_back(std::vector<float>(BSATNoInter.begin(), BSATNoInter.begin() + 5));legend.push_back("SAT");
-		YNoInter.push_back(std::vector<float>(BSATRedPolNoInter.begin(), BSATRedPolNoInter.begin() + 5)); legend.push_back("SAT Opti");
-		YNoInter.push_back(std::vector<float>(BSATRedPolIterativeNoInter.begin(), BSATRedPolIterativeNoInter.begin() + 5)); legend.push_back("Iterative");
-		YNoInter.push_back(std::vector<float>(BGJKNoInter.begin(), BGJKNoInter.begin() + 5)); legend.push_back("GJK");
+	//// Draw zoom version on small Y when there is no intersection
+	//{
+	//	std::vector<std::vector<float>> YNoInter;
+	//	std::vector<std::string> legend;
+	//	YNoInter.push_back(std::vector<float>(BSATNoInter.begin(), BSATNoInter.begin() + 5));legend.push_back("SAT");
+	//	YNoInter.push_back(std::vector<float>(BSATRedPolNoInter.begin(), BSATRedPolNoInter.begin() + 5)); legend.push_back("SAT Opti");
+	//	YNoInter.push_back(std::vector<float>(BSATRedPolIterativeNoInter.begin(), BSATRedPolIterativeNoInter.begin() + 5)); legend.push_back("Iterative");
+	//	YNoInter.push_back(std::vector<float>(BGJKNoInter.begin(), BGJKNoInter.begin() + 5)); legend.push_back("GJK");
 
-		DrawResult(YNoInter, "Polygon not intersecting", legend);
-	}
+	//	DrawResult(YNoInter, "Polygon not intersecting zoomed", legend);
+	//}
 
 
 	// Draw results when there is no intersection only sat opti gjk and no inter
@@ -163,7 +163,7 @@ void PerfTest::Run()
 		std::vector<std::string> legend;
 		YNoInter.push_back(BSATRedPolIterativeNoInter); legend.push_back("Iterative");
 		YNoInter.push_back(BGJKNoInter); legend.push_back("GJK");
-		DrawResult(YNoInter, "Polygon not intersecting", legend);
+		DrawResult(YNoInter, "Polygon not Intersecting", legend);
 	}
 
 

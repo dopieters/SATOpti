@@ -27,6 +27,8 @@ protected:
 	void DrawSimplex(const Geom::Simplex& s) const;
 	void DrawHyperPlanes(const Geom::Vector v, const float min, const float max) const;
 
+	void DrawLinePassingByA(const Geom::Point A, const Geom::Vector v, const float scale = 1.f);
+
 	void DrawOriginAxis();
 
 	[[nodiscard]] Geom::Vector ToWindowsCoordinate(Geom::Vector v) const;

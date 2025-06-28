@@ -4,7 +4,7 @@
 #include "DrawWindow.h"
 
 
-class DebugDrawMode final: public DrawWindow
+class DebugDrawMode: public DrawWindow
 {
 public:
 	DebugDrawMode();
@@ -13,7 +13,7 @@ public:
 	// main function to run the debug mode
 	void Run();
 
-private:
+protected:
 
 	// Running variable
 	// false to quit the run function

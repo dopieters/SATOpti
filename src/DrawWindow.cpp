@@ -39,6 +39,12 @@ m_window(nullptr), m_renderer(nullptr), m_isValid(false)
 	SDL_RenderClear(m_renderer);
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 
+
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+	SDL_RenderSetLogicalSize(m_renderer, W_WIDTH, W_HEIGHT);
+
+
+
 	// properly managed to allocate needed memory
 	m_isValid = true;
 }
@@ -134,6 +140,21 @@ void DrawWindow::DrawHyperPlanes(const Geom::Vector v, const float min, const fl
 		P1.y * DRAW_SCALE + SHIFTY,
 		P2.x * DRAW_SCALE + SHIFTX,
 		P2.y * DRAW_SCALE + SHIFTY);
+}
+
+void DrawWindow::DrawLinePassingByA(const Geom::Point A, const Geom::Vector v, const float scale)
+{
+
+	Geom::Point StartingPoint = A;
+	Geom::Point EndPoint = A + scale * v;
+
+	SDL_RenderDrawLine(m_renderer, (int ) (StartingPoint.x * DRAW_SCALE + SHIFTX),
+		(int)(StartingPoint.y * DRAW_SCALE + SHIFTY),
+		(int)(EndPoint.x * DRAW_SCALE + SHIFTX),
+		(int)(EndPoint.y * DRAW_SCALE + SHIFTY));
+
+
+
 }
 
 void DrawWindow::DrawOriginAxis()

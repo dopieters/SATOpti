@@ -18,8 +18,10 @@ void RunDebugMode() {
 	db.Run();
 };
 
+
+
 void RunPerfComp() {
-	PerfTest test(3000, { 3, 5, 7, 10, 15, 20, 50, 100, 500 });//, 1000, 2500, 5000, 7500, 10000});
+	PerfTest test(10000, { 5, 10, 25, 50, 75, 100, 200, 300, 400, 500});//, 1000, 2500, 5000, 7500, 10000});
 	// init seed
 	srand(123);
 	test.Run();

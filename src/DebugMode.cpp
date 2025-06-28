@@ -8,7 +8,6 @@
 #include "DebugDrawMode.h"
 #include "ScanEvents.h"
 #include "DebugDrawModeGJK.h"
-#include "VertexReductionVisu.h"
 
 
 DebugMode::DebugMode():
@@ -28,7 +27,6 @@ void DebugMode::Run()
 	menu.AddOptions("Draw GJK debug mode", [&]() {RunDrawDebugGJK();});
 	menu.AddOptions("Scan method consistency", [&]() {RunDebugMethodConsistency();});
 	menu.AddOptions("Load events", [&]() {RunLoadEvent();});
-	menu.AddOptions("Iterative method vertex reduction", [&]() {VertexReductionTendency();});
 	menu.AddOptions("Back to main menu", [&]() {Quit();});
 
 	while (!m_QuitDebugMode) {
@@ -101,8 +99,5 @@ void DebugMode::RunLoadEvent()
 
 }
 
-void DebugMode::VertexReductionTendency()
-{
-	VertexReductionVisu A;
-	A.Run();
-}
+
+

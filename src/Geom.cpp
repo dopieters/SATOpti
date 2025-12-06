@@ -17,13 +17,13 @@ namespace Geom {
 	}
 
 
-	Polygon MakeConvexPol(int nVertices) {
-		assert(nVertices >= 3 && "A minimum of 3 vertices is   ");
+	Polygon MakeConvexPol(int iVertices) {
+		assert(iVertices >= 3 && "A minimum of 3 Vertices is   ");
 
-		const int nVert = std::max(nVertices, 3);
+		const int nVert = std::max(iVertices, 3);
 
 		Polygon pol;
-		pol.vertices.reserve(nVert);
+		pol.Vertices.reserve(nVert);
 
 		// Generate two lists of random X and Y coordinates
 		std::vector<float> x; x.reserve(nVert);
@@ -109,15 +109,15 @@ namespace Geom {
 		{
 			static std::uniform_real_distribution<float> disCenter(-2.f, 2.f);
 			float polX = RandomCustom::GetRdnFloatUniform(disCenter), polY = RandomCustom::GetRdnFloatUniform(disCenter);
-			pol.baryCenter = { 0.f, 0.f };
+			pol.Barycenter = { 0.f, 0.f };
 			for (const auto& vec : vecs) {
 				polX += vec.x;
 				polY += vec.y;
-				pol.vertices.emplace_back(Vertex{ polX, polY });
-				pol.baryCenter += Vertex{ polX, polY };
+				pol.Vertices.emplace_back(Vertex{ polX, polY });
+				pol.Barycenter += Vertex{ polX, polY };
 			}
-			// store baryCenter
-			pol.baryCenter = (1.f / vecs.size()) * pol.baryCenter;
+			// store Barycenter
+			pol.Barycenter = (1.f / vecs.size()) * pol.Barycenter;
 		}
 
 
@@ -127,7 +127,7 @@ namespace Geom {
 
 	bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
-		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
 		bool bInterBForce = measureExecutionTime(PolygonsInterTestBForce, "Brute force", A, B);
 		bool bInterSAT = measureExecutionTime(PolygonInterTestSAT, "SAT", A, B);
@@ -144,20 +144,20 @@ namespace Geom {
 	bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
 
-		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
 		// Test if edges intersects
 		{
-			const int nAVert = A.vertices.size();
-			const int nBVert = B.vertices.size();
+			const int nAVert = A.Vertices.size();
+			const int nBVert = B.Vertices.size();
 
 			for (int i = 0; i < nAVert; ++i) {
 				const int nextA = (i + 1) % nAVert;
 				for (int j = 0; j < nBVert; ++j)
 				{
 					const int nextB = (j + 1) % nBVert;
-					if (SegmentIntersect(A.vertices[i], A.vertices[nextA],
-						B.vertices[j], B.vertices[nextB]))
+					if (SegmentIntersect(A.Vertices[i], A.Vertices[nextA],
+						B.Vertices[j], B.Vertices[nextB]))
 					{
 						return true;
 					}
@@ -174,8 +174,8 @@ namespace Geom {
 
 		// Test if one vertex is inside the other polygon
 		{
-			if (IsPointInsidePolygon(A.vertices[0], B)
-				|| IsPointInsidePolygon(B.vertices[0], A)) {
+			if (IsPointInsidePolygon(A.Vertices[0], B)
+				|| IsPointInsidePolygon(B.Vertices[0], A)) {
 				return true;
 			}
 		}
@@ -187,16 +187,16 @@ namespace Geom {
 
 	bool PolygonInterTestSAT(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
-		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
 		std::vector<Vector> axisToTestAgainst;
-		axisToTestAgainst.reserve(A.vertices.size() + B.vertices.size());
+		axisToTestAgainst.reserve(A.Vertices.size() + B.Vertices.size());
 
 		auto computePolEdgesNorm = [&axisToTestAgainst](const Polygon& RESTRICT pol) {
-			const int nVert = pol.vertices.size();
+			const int nVert = pol.Vertices.size();
 			for (int ii = 0; ii < nVert; ++ii) {
 				const int nextInd = (ii + 1) % nVert;
-				const Vector edgeVec = pol.vertices[nextInd] - pol.vertices[ii];
+				const Vector edgeVec = pol.Vertices[nextInd] - pol.Vertices[ii];
 				axisToTestAgainst.emplace_back(Vector{ -edgeVec.y, edgeVec.x });
 			}
 			};
@@ -226,14 +226,14 @@ namespace Geom {
 
 	bool PolygonInterTestSATOpti(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
-		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
 		// check if barycenter inside each other
-		if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
+		if (IsPointInsidePolygon(A.Barycenter, B) || IsPointInsidePolygon(B.Barycenter, A)) {
 			return true;
 		}
 
-		Vector barAxis = B.baryCenter - A.baryCenter;
+		Vector barAxis = B.Barycenter - A.Barycenter;
 		//barAxis = barAxis / barAxis.Mag();
 		auto aMax = GetMaxPolygonProjAxis(A, barAxis);
 		auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
@@ -253,14 +253,14 @@ namespace Geom {
 
 	bool PolygonInterTestSATOptiItera(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
-		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
 		// check if barycenter inside each other
-		if (IsPointInsidePolygon(A.baryCenter, B) || IsPointInsidePolygon(B.baryCenter, A)) {
+		if (IsPointInsidePolygon(A.Barycenter, B) || IsPointInsidePolygon(B.Barycenter, A)) {
 			return true;
 		}
 
-		Vector barAxis = B.baryCenter - A.baryCenter;
+		Vector barAxis = B.Barycenter - A.Barycenter;
 		//barAxis = barAxis / barAxis.Mag();
 		auto aMax = GetMaxPolygonProjAxis(A, barAxis);
 		auto bMin = -GetMaxPolygonProjAxis(B, -barAxis);
@@ -274,7 +274,7 @@ namespace Geom {
 		Polygon C = PolygonComputeReducePol(A, barAxis, bMin, true);
 		Polygon D = PolygonComputeReducePol(B, barAxis, aMax, false);
 
-		if (C.vertices.size() >= A.vertices.size() || D.vertices.size() >= B.vertices.size()) {
+		if (C.Vertices.size() >= A.Vertices.size() || D.Vertices.size() >= B.Vertices.size()) {
 			return PolygonInterTestSAT(C, D);
 		}
 		else {
@@ -286,7 +286,7 @@ namespace Geom {
 
 	bool PolygonInterTestGJK(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
-		assert(A.vertices.size() >= 3 && B.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
 
 		auto SimplexSupportPoint = [&](const Vector d) {
@@ -295,10 +295,10 @@ namespace Geom {
 
 
 
-		Simplex simp;
+		Simplex GJKSimplex;
 		Vector dir = { 0, 1 }; // initial direction chosen arbitrarly
 		Point simpSup = SimplexSupportPoint(dir);
-		simp.Add(SimplexSupportPoint(simpSup));
+		GJKSimplex.Add(SimplexSupportPoint(simpSup));
 		dir = -simpSup;
 
 
@@ -308,9 +308,9 @@ namespace Geom {
 				return false;
 			}
 
-			simp.Add(simpSup);
+			GJKSimplex.Add(simpSup);
 
-			if (simp.UpdateSimplex(dir)) {
+			if (GJKSimplex.UpdateSimplex(dir)) {
 				return true;
 			}
 		}
@@ -322,15 +322,15 @@ namespace Geom {
 
 	std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 	{
-		assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
-		float minProj = A.vertices[0].x * d.x + A.vertices[0].y * d.y;
+		float minProj = A.Vertices[0].x * d.x + A.Vertices[0].y * d.y;
 		float maxProj = minProj;
 
 		{
-			const int nVertA = A.vertices.size();
+			const int nVertA = A.Vertices.size();
 			for (int ii = 0; ii < nVertA; ++ii) {
-				const float proj = A.vertices[ii].x * d.x + A.vertices[ii].y * d.y;
+				const float proj = A.Vertices[ii].x * d.x + A.Vertices[ii].y * d.y;
 				minProj = std::min(minProj, proj);
 				maxProj = std::max(maxProj, proj);
 			}
@@ -342,13 +342,13 @@ namespace Geom {
 
 	float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d)
 	{
-		assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && "Pol min Vertices is 3");
 		auto ProjIndAlongD = [&](int index) {
-			return A.vertices[index].x * d.x + A.vertices[index].y * d.y;
+			return A.Vertices[index].x * d.x + A.Vertices[index].y * d.y;
 			};
 
 
-		const int nVertA = A.vertices.size();
+		const int nVertA = A.Vertices.size();
 
 		float maxProj = 0;
 		int MaxProjInd = 0;
@@ -382,11 +382,11 @@ namespace Geom {
 	Point GetFurthestPoint(const Polygon& RESTRICT A, const Vector d)
 	{
 		auto ProjIndAlongD = [&](int index) {
-			return A.vertices[index].x * d.x + A.vertices[index].y * d.y;
+			return A.Vertices[index].x * d.x + A.Vertices[index].y * d.y;
 			};
 
 
-		const int nVertA = A.vertices.size();
+		const int nVertA = A.Vertices.size();
 
 		float maxProj = 0;
 		int MaxProjInd = 0;
@@ -414,13 +414,10 @@ namespace Geom {
 			newProj = ProjIndAlongD(nextProjInd % nVertA);
 		}
 
-		return A.vertices[MaxProjInd];
+		return A.Vertices[MaxProjInd];
 	}
 
-	float CrossProd2D(Vector Va, Vector Vb)
-	{
-		return Va.x * Vb.y - Va.y * Vb.x;
-	}
+	
 
 	bool SegmentIntersect(Point A, Point B, Point C, Point D)
 	{
@@ -437,13 +434,13 @@ namespace Geom {
 
 	bool PolygonIncludeInEachOther(const Polygon& RESTRICT A, const Polygon& RESTRICT B)
 	{
-		assert(A.vertices.size() >= 3 && B.vertices.size() > 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && B.Vertices.size() > 3 && "Pol min Vertices is 3");
 
 		// A inside B
 		{
-			const int nAVert = A.vertices.size();
+			const int nAVert = A.Vertices.size();
 			for (int ii = 0; ii < nAVert; ++ii) {
-				if (IsPointInsidePolygon(A.vertices[ii], B)) {
+				if (IsPointInsidePolygon(A.Vertices[ii], B)) {
 					return true;
 				}
 			}
@@ -451,9 +448,9 @@ namespace Geom {
 
 		// B inside A
 		{
-			const int nBVert = B.vertices.size();
+			const int nBVert = B.Vertices.size();
 			for (int ii = 0; ii < nBVert; ++ii) {
-				if (IsPointInsidePolygon(B.vertices[ii], A)) {
+				if (IsPointInsidePolygon(B.Vertices[ii], A)) {
 					return true;
 				}
 			}
@@ -462,56 +459,56 @@ namespace Geom {
 		return false;
 	}
 
-	bool IsPointInsidePolygon(Point A, const Polygon& RESTRICT pol)
+	bool IsPointInsidePolygon(Point A, const Polygon& RESTRICT Pol)
 	{
-		assert(pol.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(Pol.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
-		bool isInside = IsPointInsidePolygonRec(A, pol, 1, pol.vertices.size() - 1);
+		bool isInside = IsPointInsidePolygonRec(A, Pol, 1, Pol.Vertices.size() - 1);
 		return isInside;
-		// Check if point A on the same side of the edges
-		{
-			float sign = CrossProd2D(A - pol.vertices[0], pol.vertices[1] - pol.vertices[0]);
-			int NpolVert = pol.vertices.size();
-			for (int ii = 1; ii < NpolVert; ++ii) {
-				Point V1 = pol.vertices[ii];
-				Point V2 = pol.vertices[(ii + 1) % NpolVert];
+		//// Check if point A on the same side of the edges
+		//{
+		//	float sign = CrossProd2D(A - Pol.Vertices[0], Pol.Vertices[1] - Pol.Vertices[0]);
+		//	int NpolVert = Pol.Vertices.size();
+		//	for (int ii = 1; ii < NpolVert; ++ii) {
+		//		Point V1 = Pol.Vertices[ii];
+		//		Point V2 = Pol.Vertices[(ii + 1) % NpolVert];
 
-				float cross = CrossProd2D(A - V1, V2 - V1);
-				if (sign * cross < 0) {
-					assert(isInside == false && "Should be false");
-					return false;
-				}
-			}
-		}
+		//		float cross = CrossProd2D(A - V1, V2 - V1);
+		//		if (sign * cross < 0) {
+		//			assert(isInside == false && "Should be false");
+		//			return false;
+		//		}
+		//	}
+		//}
 
-		assert(isInside == true && "Should be true");
-		return true;
+		//assert(isInside == true && "Should be true");
+		//return true;
 	}
 
-	bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT pol, const int left, const int right)
+	bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT Pol, const int LeftIndex, const int RightIndex)
 	{
-		assert(pol.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(Pol.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
-		if (right - left <= 1) {
-			return IsPointInsideTriangle(A, pol.vertices[0], pol.vertices[left], pol.vertices[right]);
+		if (RightIndex - LeftIndex <= 1) {
+			return IsPointInsideTriangle(A, Pol.Vertices[0], Pol.Vertices[LeftIndex], Pol.Vertices[RightIndex]);
 		}
 
-		const int mid = (left + right) / 2;
+		const int mid = (LeftIndex + RightIndex) / 2;
 
-		const Point v0 = pol.vertices[0];
-		const Point vMid = pol.vertices[mid];
+		const Point v0 = Pol.Vertices[0];
+		const Point vMid = Pol.Vertices[mid];
 
 
 		if (CrossProd2D(A - v0, vMid - v0) > 0) {
-			return IsPointInsidePolygonRec(A, pol, left, mid);
+			return IsPointInsidePolygonRec(A, Pol, LeftIndex, mid);
 		}
 		else {
-			return IsPointInsidePolygonRec(A, pol, mid, right);
+			return IsPointInsidePolygonRec(A, Pol, mid, RightIndex);
 		}
 	}
 
 
-	bool IsPointInsideTriangle(const Point pt, const Point v0, const Point v1, const Point v2) {
+	bool IsPointInsideTriangle(const Point pt, const Vertex v0, const Vertex v1, const Vertex v2) {
 		Point d0 = v1 - v0;
 		Point d1 = v2 - v0;
 		Point d2 = pt - v0;
@@ -529,29 +526,27 @@ namespace Geom {
 
 	}
 
-	Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, const float limit, const bool isAbvLmtPol)
+	Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector ProjAxis, const float limit, const bool isAbvLmt)
 	{
-		assert(A.vertices.size() >= 3 && "Pol min vertices is 3");
+		assert(A.Vertices.size() >= 3 && "Pol min Vertices is 3");
 
-		if (A.vertices.size() == 3) return A;
+		if (A.Vertices.size() == 3) return A;
 
 		Polygon newPol;
-		newPol.vertices.reserve(A.vertices.size());
+		newPol.Vertices.reserve(A.Vertices.size());
 		{
-			// Define the lambda 
-			using LimitCompFunc = std::function<bool(float)>;
-			// Use the defined type for the ternary operator 
 
-			LimitCompFunc limitComp = isAbvLmtPol ?
+			using LimitCompFunc = std::function<bool(float)>;
+			LimitCompFunc limitComp = isAbvLmt ?
 				LimitCompFunc([&](float proj) { return (proj - limit) >= 0; }) :
 				LimitCompFunc([&](float proj) { return (proj - limit) <= 0; });
 
 			auto getProj = [&](int index) {
-				return A.vertices[index].x * axis.x + A.vertices[index].y * axis.y;
+				return A.Vertices[index].x * ProjAxis.x + A.Vertices[index].y * ProjAxis.y;
 				};
 
 
-			const int nVertA = A.vertices.size();
+			const int nVertA = A.Vertices.size();
 			Point Barycenter{ 0,0 };
 			bool isPrevProjValid = limitComp(getProj(nVertA - 1));
 			bool isProjValid = limitComp(getProj(0));
@@ -560,83 +555,83 @@ namespace Geom {
 				{
 					const bool isNextProjValid = limitComp(getProj((ii + 1) % nVertA));
 					if (isPrevProjValid || isProjValid || isNextProjValid) {
-						newPol.vertices.push_back(A.vertices[ii]);
-						Barycenter += A.vertices[ii];
+						newPol.Vertices.push_back(A.Vertices[ii]);
+						Barycenter += A.Vertices[ii];
 					}
 					isPrevProjValid = isProjValid;
 					isProjValid = isNextProjValid;
 				}
 			}
 
-			newPol.baryCenter = (1.f / newPol.vertices.size()) * Barycenter;
+			newPol.Barycenter = (1.f / newPol.Vertices.size()) * Barycenter;
 		}
 
-		assert(newPol.vertices.size() >= 3 && "A polygon should have at least 3 vertices");
+		assert(newPol.Vertices.size() >= 3 && "A polygon should have at least 3 Vertices");
 		return newPol;
 	}
 
 	void Polygon::CalculateBarycenter()
 	{
-		baryCenter = { 0.f, 0.f };
-		for (const auto& vert : vertices) {
-			baryCenter += Vertex{ vert.x, vert.y };
+		Barycenter = { 0.f, 0.f };
+		for (const auto& vert : Vertices) {
+			Barycenter += Vertex{ vert.x, vert.y };
 		}
 
-		baryCenter = (1.f / vertices.size()) * baryCenter;
+		Barycenter = (1.f / Vertices.size()) * Barycenter;
 
 	}
 
-	void Simplex::Add(const Point& vertex)
+	void Simplex::Add(const Vertex& InVertex)
 	{
-		vertices = { vertex, vertices[0], vertices[1] };
-		m_size = std::min(m_size + 1, 3);
+		Vertices = { InVertex, Vertices[0], Vertices[1] };
+		iSize = std::min(iSize + 1, 3);
 	}
 
-	bool Simplex::UpdateSimplex(Vector& dir)
+	bool Simplex::UpdateSimplex(Vector& OutDir)
 	{
-		switch (m_size) {
+		switch (iSize) {
 		case 0:
 		case 1:
 			assert(false && "Should never call this function with empty simplex");
 			break;
 		case 2:
-			return LineUpdate(dir);
+			return LineUpdate(OutDir);
 		case 3:
-			return TriangleUpdate(dir);
+			return TriangleUpdate(OutDir);
 		}
 
 		return false;
 	}
 
-	bool Simplex::LineUpdate(Vector& dir)
+	bool Simplex::LineUpdate(Vector& OutDir)
 	{
-		Vector AB = vertices[1] - vertices[0];
-		Vector AO = -vertices[0];
+		Vector AB = Vertices[1] - Vertices[0];
+		Vector AO = -Vertices[0];
 
 		if (DotProduct(AB, AO) > 0) {
-			dir = { -AB.y, AB.x };
+			OutDir = { -AB.y, AB.x };
 
 			// two possibilities for the direction, 
 			// confirm the right one is chosen
-			if (DotProduct(AO, dir) < 0) {
-				dir = -dir;
+			if (DotProduct(AO, OutDir) < 0) {
+				OutDir = -OutDir;
 			}
 		}
 		else {
-			vertices = { vertices[0] };
-			dir = AO;
-			m_size = 1;
+			Vertices = { Vertices[0] };
+			OutDir = AO;
+			iSize = 1;
 		}
 
 		return false;
 	}
 
-	bool Simplex::TriangleUpdate(Vector& dir)
+	bool Simplex::TriangleUpdate(Vector& OutDir)
 	{
 
-		Vector A = vertices[0];
-		Vector B = vertices[1];
-		Vector C = vertices[2];
+		Vector A = Vertices[0];
+		Vector B = Vertices[1];
+		Vector C = Vertices[2];
 
 		double signedArea = 0.5 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
 
@@ -647,8 +642,8 @@ namespace Geom {
 		Vector normalAB = (signedArea > 0) ? Vector{ AB.y, -AB.x } : Vector{ -AB.y, AB.x };
 		if (DotProduct(normalAB, AO) > 0) {
 			// Origin is outside AB, reduce simplex to AB
-			vertices = { A, B };
-			dir = normalAB; // Update direction to point toward origin
+			Vertices = { A, B };
+			OutDir = normalAB; // Update direction to point toward origin
 			assert(!IsPointInsideTriangle({ 0,0 }, A, B, C) && "The point should be out of the triangle");
 			return false;
 		}
@@ -657,8 +652,8 @@ namespace Geom {
 		Vector normalAC = (signedArea > 0) ? Vector{ -AC.y, AC.x } : Vector{ AC.y, -AC.x };
 		if (DotProduct(normalAC, AO) > 0) {
 			// Origin is outside AC, reduce simplex to AC
-			vertices = { A, C };
-			dir = normalAC; // Update direction to point toward origin
+			Vertices = { A, C };
+			OutDir = normalAC; // Update direction to point toward origin
 			assert(!IsPointInsideTriangle({ 0,0 }, A, B, C) && "The point should be out of the triangle");
 			return false;
 		}

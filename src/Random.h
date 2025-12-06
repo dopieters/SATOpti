@@ -1,5 +1,6 @@
 #include <random>
 
+// Random number generator utility
 namespace RandomCustom
 {
 	std::random_device& GetRandomDevice();

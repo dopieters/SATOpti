@@ -4,6 +4,8 @@
 #include <vector>
 
 
+// Class that look for discrepancies between methods
+// and save the events
 
 
 class ScanEvents final : public DrawWindow{
@@ -23,9 +25,9 @@ private:
 
 private:
 	// pair to draw
-	std::vector<std::pair<Geom::Polygon, Geom::Polygon>> m_EventToDraw;
-	std::pair<Geom::Polygon, Geom::Polygon> pairOfRedPol;
-	int m_CurrentPolPair = 0;
-	bool m_isSave = true;
+	std::vector<std::pair<Geom::Polygon, Geom::Polygon>> PolygonPairs;
+	std::pair<Geom::Polygon, Geom::Polygon> RedPolygonsPair;
+	int iCurrentPair = 0;
+	bool bSave = true;
 
 };

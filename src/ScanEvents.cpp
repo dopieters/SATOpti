@@ -6,33 +6,33 @@
 
 ScanEvents::ScanEvents(std::vector<std::pair<Geom::Polygon, Geom::Polygon>> pairPolygons, bool save):
 DrawWindow(),
-m_EventToDraw(pairPolygons),
-m_isSave(save)
+PolygonPairs(pairPolygons),
+bSave(save)
 {
 }
 
 ScanEvents::~ScanEvents() {
 
-	if (m_isSave) {
-		savePairsOfPolygons(m_EventToDraw, "events.bin");
+	if (bSave) {
+		SavePairs(PolygonPairs, "events.bin");
 	}
-	m_EventToDraw.clear();
+	PolygonPairs.clear();
 }
 
 void ScanEvents::ScanPairOfPolygons(){
 	DoPolygonColTests();
-	while (m_CurrentPolPair >= 0 && m_CurrentPolPair < m_EventToDraw.size()) {
-		SDL_RenderClear(m_renderer);
+	while (iCurrentPair >= 0 && iCurrentPair < PolygonPairs.size()) {
+		SDL_RenderClear(pRenderer);
 
 		// black background
-		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-		SDL_RenderClear(m_renderer);
+		SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+		SDL_RenderClear(pRenderer);
 
 		// draw polygons
 		DrawPolygonPairs();
 
 		// Present the backbuffer
-		SDL_RenderPresent(m_renderer);
+		SDL_RenderPresent(pRenderer);
 
 		ProcessEvents();
 	}
@@ -44,13 +44,13 @@ void ScanEvents::ProcessEvents(){
 	{
 		if (event.type == SDL_QUIT)
 		{
-			m_CurrentPolPair = -1;
+			iCurrentPair = -1;
 		}
 		else if (event.type == SDL_KEYDOWN) {
 			switch (event.key.keysym.sym)
 			{
 			case SDLK_RETURN:
-				++m_CurrentPolPair;
+				++iCurrentPair;
 				DoPolygonColTests();
 				break;
 			default:
@@ -62,16 +62,16 @@ void ScanEvents::ProcessEvents(){
 
 void ScanEvents::DrawPolygonPairs(){
 	// Set polygon 1 edges draw color
-	SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, 255);
-	DrawPolygon(m_EventToDraw[m_CurrentPolPair].first);
+	SDL_SetRenderDrawColor(pRenderer, 255, 0, 0, 255);
+	DrawPolygon(PolygonPairs[iCurrentPair].first);
 
 	// set pol 2 draw color
-	SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
-	DrawPolygon(m_EventToDraw[m_CurrentPolPair].second);
+	SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
+	DrawPolygon(PolygonPairs[iCurrentPair].second);
 
 
-	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-	DrawPolygon(pairOfRedPol.first); DrawPolygon(pairOfRedPol.second);
+	SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+	DrawPolygon(RedPolygonsPair.first); DrawPolygon(RedPolygonsPair.second);
 
 
 }
@@ -79,8 +79,8 @@ void ScanEvents::DrawPolygonPairs(){
 void ScanEvents::DoPolygonColTests()
 {
 	
-	if (m_CurrentPolPair >= 0 && m_CurrentPolPair < m_EventToDraw.size()) {
-		auto& CurrentPolPair = m_EventToDraw[m_CurrentPolPair];
+	if (iCurrentPair >= 0 && iCurrentPair < PolygonPairs.size()) {
+		auto& CurrentPolPair = PolygonPairs[iCurrentPair];
 		DoPolygonsIntersects(CurrentPolPair.first, CurrentPolPair.second);
 
 
@@ -88,7 +88,7 @@ void ScanEvents::DoPolygonColTests()
 
 	
 		// compute reduced polygon
-		Geom::Vector barAxis = CurrentPolPair.second.baryCenter - CurrentPolPair.first.baryCenter;
+		Geom::Vector barAxis = CurrentPolPair.second.Barycenter - CurrentPolPair.first.Barycenter;
 
 		//barAxis = barAxis / barAxis.Mag();
 
@@ -96,12 +96,12 @@ void ScanEvents::DoPolygonColTests()
 		auto BProj = GetMinMaxPolygonProjAxis(CurrentPolPair.second, barAxis);
 
 		if (AProj.first > BProj.second || AProj.second < BProj.first) {
-			pairOfRedPol.first.vertices.clear(); pairOfRedPol.second.vertices.clear();
+			RedPolygonsPair.first.Vertices.clear(); RedPolygonsPair.second.Vertices.clear();
 			return;
 		}
 
-		pairOfRedPol.first = PolygonComputeReducePol(CurrentPolPair.first, barAxis, BProj.first, true);
-		pairOfRedPol.second = PolygonComputeReducePol(CurrentPolPair.second, barAxis, AProj.second, false);
+		RedPolygonsPair.first = PolygonComputeReducePol(CurrentPolPair.first, barAxis, BProj.first, true);
+		RedPolygonsPair.second = PolygonComputeReducePol(CurrentPolPair.second, barAxis, AProj.second, false);
 
 	}
 }

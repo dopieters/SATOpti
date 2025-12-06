@@ -2,31 +2,31 @@
 #include "Utilities.h"
 
 
-MenuInterface::MenuInterface(const std::string &mainString):
-m_MainString(mainString)
+MenuInterface::MenuInterface(const std::string& InMenuText):
+sMenuText(InMenuText)
 {
 }
 
-void MenuInterface::AddOptions(const std::string& optString, std::function<void()>optFunction) {
-	m_StringOptions.push_back(optString);
-	m_MenuFunctions.push_back(optFunction);
+void MenuInterface::AddOptions(const std::string& InOptStr, std::function<void()>InOptFcn) {
+	sOptions.push_back(InOptStr);
+	MenuFunctions.push_back(InOptFcn);
 }
 
 void MenuInterface::RunInterface() {
 
 	while (true) {
-		std::cout << m_MainString << "\n";
-		for (int ii = 0; ii < m_StringOptions.size(); ++ii) {
-			std::cout << ii << ". " << m_StringOptions[ii] << "\n";
+		std::cout << sMenuText << "\n";
+		for (int ii = 0; ii < sOptions.size(); ++ii) {
+			std::cout << ii << ". " << sOptions[ii] << "\n";
 		}
 
 		int input = -1;
 
 		if (std::cin >> input									// input int
-			&& input >= 0 && input < m_StringOptions.size()		// valid input
+			&& input >= 0 && input < sOptions.size()		// valid input
 			){
 			ClearTerminal();
-			m_MenuFunctions[input]();
+			MenuFunctions[input]();
 			break;
 		}
 		else {

@@ -4,6 +4,13 @@
 #include "DrawWindow.h"
 
 
+
+// Draw debug mode
+// Use to 
+// - visualize polygons generation
+// - visualize reduced SAT algorithm
+// - debug collisions algorithm
+
 class DebugDrawMode: public DrawWindow
 {
 public:
@@ -17,30 +24,32 @@ protected:
 
 	// Running variable
 	// false to quit the run function
-	bool m_isRunning = false;
+	bool bRunning = false;
 
-	bool m_isPolIntersect = false;
+	bool bPolIntersect = false;
 
-	// Number of vertices for the convex polygons
-	int nVertices = 100;
+	// Number of Vertices for the convex polygons
+	int iVertices = 100;
 
 	// false hide min pol
 	// true show min pol
-	bool m_isShowMinPol = false;
-	bool m_isShowMinPolDebug = false;
+	bool bShowMinPol = false;
+	bool bShowMinPolDebug = false;
 
-
+	// Render the polygons on screen
 	void DrawPolygons() const;
 	
 
 	// Printout the different commands
 	void PrintCommand() const;
+
+	// process the different events
 	void ProcessEvents();
 
 	void MakePolygons();
-	Geom::Polygon pol1;
-	Geom::Polygon pol2;
+	Geom::Polygon PolygonA;
+	Geom::Polygon PolygonB;
 
-	Geom::Polygon pol1Red;
-	Geom::Polygon pol2Red;
+	Geom::Polygon ReducedPolygonA;
+	Geom::Polygon ReducedPolygonB;
 };

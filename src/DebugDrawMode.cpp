@@ -20,24 +20,24 @@ DebugDrawMode::~DebugDrawMode()
 
 void DebugDrawMode::Run()
 {
-	m_isRunning = true;
+	bRunning = true;
 	PrintCommand();
 
 	MakePolygons();
 
-	while (m_isRunning) {
-		SDL_RenderClear(m_renderer);
+	while (bRunning) {
+		SDL_RenderClear(pRenderer);
 		ProcessEvents();
 
 		// black background
-		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-		SDL_RenderClear(m_renderer);
+		SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+		SDL_RenderClear(pRenderer);
 
 		// draw polygons
 		DrawPolygons();
 
 		// Present the backbuffer
-		SDL_RenderPresent(m_renderer);
+		SDL_RenderPresent(pRenderer);
 	}
 }
 
@@ -46,44 +46,44 @@ void DebugDrawMode::Run()
 void DebugDrawMode::DrawPolygons() const
 {
 	// Set polygon 1 edges draw color
-	if (!m_isPolIntersect)
-		SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
+	if (!bPolIntersect)
+		SDL_SetRenderDrawColor(pRenderer, 0, 0, 255, 255);
 	else
-		SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, 255);
+		SDL_SetRenderDrawColor(pRenderer, 255, 0, 0, 255);
 
-	DrawPolygon(pol1);
+	DrawPolygon(PolygonA);
 
 	// set pol 2 draw color
-	if (!m_isPolIntersect)
-		SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
+	if (!bPolIntersect)
+		SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
 
-	DrawPolygon(pol2);
+	DrawPolygon(PolygonB);
 
-	if (m_isShowMinPol)
+	if (bShowMinPol)
 	{
 		// set reduced polygon draw color and draw
-		SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-		DrawPolygon(pol1Red);
-		DrawPolygon(pol2Red);
+		SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+		DrawPolygon(ReducedPolygonA);
+		DrawPolygon(ReducedPolygonB);
 
-		if (m_isShowMinPolDebug) {
+		if (bShowMinPolDebug) {
 
 			// Draw barycenter to barycenter line
-			SDL_SetRenderDrawColor(m_renderer, 255, 255, 0, 255);
-			SDL_RenderDrawLine(m_renderer, pol1.baryCenter.x * DRAW_SCALE + SHIFTX,
-				pol1.baryCenter.y * DRAW_SCALE + SHIFTY,
-				pol2.baryCenter.x * DRAW_SCALE + SHIFTX,
-				pol2.baryCenter.y * DRAW_SCALE + SHIFTY);
+			SDL_SetRenderDrawColor(pRenderer, 255, 255, 0, 255);
+			SDL_RenderDrawLine(pRenderer, PolygonA.Barycenter.x * DRAW_SCALE + SHIFTX,
+				PolygonA.Barycenter.y * DRAW_SCALE + SHIFTY,
+				PolygonB.Barycenter.x * DRAW_SCALE + SHIFTX,
+				PolygonB.Barycenter.y * DRAW_SCALE + SHIFTY);
 
-			Geom::Vector barAxis = pol2.baryCenter - pol1.baryCenter;
+			Geom::Vector barAxis = PolygonB.Barycenter - PolygonA.Barycenter;
 			//barAxis = barAxis / barAxis.Mag();
 
-			SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
-			auto pol1Proj = GetMinMaxPolygonProjAxis(pol1, barAxis);
+			SDL_SetRenderDrawColor(pRenderer, 0, 0, 255, 255);
+			auto pol1Proj = GetMinMaxPolygonProjAxis(PolygonA, barAxis);
 			DrawHyperPlanes(barAxis, pol1Proj.first, pol1Proj.second);
 
-			SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
-			auto pol2Proj = GetMinMaxPolygonProjAxis(pol2, barAxis);
+			SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
+			auto pol2Proj = GetMinMaxPolygonProjAxis(PolygonB, barAxis);
 			DrawHyperPlanes(barAxis, pol2Proj.first, pol2Proj.second);
 		}
 
@@ -99,7 +99,7 @@ void DebugDrawMode::PrintCommand() const
 	std::cout << "ENTER : Generate new polygon \n";
 	std::cout << "BACKSPACE : Back to main menu \n";
 	std::cout << "+ : Increase the number of vertex (Need to be re-generated) \n";
-	std::cout << "- : Decrease the number of vertex (the minimum is 3 vertices) \n";
+	std::cout << "- : Decrease the number of vertex (the minimum is 3 Vertices) \n";
 	std::cout << "m : toggle min polygon view \n";
 	std::cout << "d : toggle min pol debug helper (min polygon view need to be on) \n";
 
@@ -112,7 +112,7 @@ void DebugDrawMode::ProcessEvents()
 	{
 		if (event.type == SDL_QUIT)
 		{
-			m_isRunning = false;
+			bRunning = false;
 		}
 		else if (event.type == SDL_KEYDOWN) {
 			switch (event.key.keysym.sym)
@@ -121,26 +121,26 @@ void DebugDrawMode::ProcessEvents()
 				MakePolygons();
 				break;
 			case SDLK_BACKSPACE:
-				m_isRunning = false;
+				bRunning = false;
 				break;
 			case SDLK_PLUS:
-				++nVertices;
+				++iVertices;
 				break;
 			case SDLK_MINUS:
-				--nVertices;
-				nVertices = std::max(3, nVertices);
+				--iVertices;
+				iVertices = std::max(3, iVertices);
 				break;
 
 			case SDLK_SEMICOLON: // For my own keyboard layout
 				if ((SDL_GetModState() & KMOD_SHIFT)) {
-					++nVertices;
+					++iVertices;
 				}
 				break;
 			case SDLK_m:
-				m_isShowMinPol = !m_isShowMinPol;
+				bShowMinPol = !bShowMinPol;
 				break;
 			case SDLK_d:
-				m_isShowMinPolDebug = !m_isShowMinPolDebug;
+				bShowMinPolDebug = !bShowMinPolDebug;
 			default:
 				break;
 			}
@@ -152,22 +152,22 @@ void DebugDrawMode::MakePolygons()
 {
 	PrintCommand();
 
-	pol1.vertices.clear();
-	pol2.vertices.clear();
-	pol1Red.vertices.clear();
-	pol2Red.vertices.clear();
+	PolygonA.Vertices.clear();
+	PolygonB.Vertices.clear();
+	ReducedPolygonA.Vertices.clear();
+	ReducedPolygonB.Vertices.clear();
 
-	pol1 = Geom::MakeConvexPol(nVertices);
-	pol2 = Geom::MakeConvexPol(nVertices);
+	PolygonA = Geom::MakeConvexPol(iVertices);
+	PolygonB = Geom::MakeConvexPol(iVertices);
 
-	m_isPolIntersect = DoPolygonsIntersects(pol1, pol2);
+	bPolIntersect = DoPolygonsIntersects(PolygonA, PolygonB);
 
 
-	Geom::Vector barAxis = pol2.baryCenter - pol1.baryCenter;
+	Geom::Vector barAxis = PolygonB.Barycenter - PolygonA.Barycenter;
 	//barAxis = barAxis / barAxis.Mag();
 
-	auto AProj = GetMinMaxPolygonProjAxis(pol1, barAxis);
-	auto BProj = GetMinMaxPolygonProjAxis(pol2, barAxis);
+	auto AProj = GetMinMaxPolygonProjAxis(PolygonA, barAxis);
+	auto BProj = GetMinMaxPolygonProjAxis(PolygonB, barAxis);
 
 	// check if this axis is not a separating axis
 	if (AProj.first > BProj.second || AProj.second < BProj.first) {
@@ -175,8 +175,8 @@ void DebugDrawMode::MakePolygons()
 	}
 
 	// compute reduced polygon
-	pol1Red = PolygonComputeReducePol(pol1, barAxis, BProj.first, true);
-	pol2Red = PolygonComputeReducePol(pol2, barAxis, AProj.second, false);
+	ReducedPolygonA = PolygonComputeReducePol(PolygonA, barAxis, BProj.first, true);
+	ReducedPolygonB = PolygonComputeReducePol(PolygonB, barAxis, AProj.second, false);
 
 
 

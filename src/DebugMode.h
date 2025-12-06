@@ -6,6 +6,11 @@
 
 struct Polygon;
 
+
+
+
+// Draw debug mode interface used to call the different options
+
 class DebugMode
 {
 public:
@@ -17,16 +22,25 @@ public:
 
 
 private: 
-	bool m_QuitDebugMode = false;
+	bool bQuitDebugMode = false;
+
+	// Run the SAT debugging mode
 	void RunDrawDebugMode();
+
+	// Run the GJK debugging mode
 	void RunDrawDebugGJK();
+
+	// Run a scanning to check consistencies between the differents 
+	// Methods
 	void RunDebugMethodConsistency();
+
+
+	// Run events that was previously saved
+	// for debuggin special cases
 	void RunLoadEvent();
-	void VertexReductionTendency();
-	void Quit() { m_QuitDebugMode = true; }
 
 
-	bool bDrawWndOpen = false;
-	
+	void Quit() { bQuitDebugMode = true; }
+
 };
 

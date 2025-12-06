@@ -7,7 +7,7 @@
 
 
 DrawWindow::DrawWindow():
-m_window(nullptr), m_renderer(nullptr), m_isValid(false)
+pWnd(nullptr), pRenderer(nullptr), bValid(false)
 {
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -17,9 +17,9 @@ m_window(nullptr), m_renderer(nullptr), m_isValid(false)
 	}
 
 	// Create a window
-	m_window = SDL_CreateWindow("Hello SDL",
+	pWnd = SDL_CreateWindow("Hello SDL",
 		100, 100, W_WIDTH, W_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-	if (m_window == nullptr)
+	if (pWnd == nullptr)
 	{
 		std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -27,87 +27,87 @@ m_window(nullptr), m_renderer(nullptr), m_isValid(false)
 	}
 
 	// Create a renderer
-	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (m_renderer == nullptr)
+	pRenderer = SDL_CreateRenderer(pWnd, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	if (pRenderer == nullptr)
 	{
-		SDL_DestroyWindow(m_window);
+		SDL_DestroyWindow(pWnd);
 		std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
 		return;
 	}
 
-	SDL_RenderClear(m_renderer);
-	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+	SDL_RenderClear(pRenderer);
+	SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
 
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
-	SDL_RenderSetLogicalSize(m_renderer, W_WIDTH, W_HEIGHT);
+	SDL_RenderSetLogicalSize(pRenderer, W_WIDTH, W_HEIGHT);
 
 
 
 	// properly managed to allocate needed memory
-	m_isValid = true;
+	bValid = true;
 }
 
 
 DrawWindow::~DrawWindow()
 {
-	if (!m_isValid) return;
+	if (!bValid) return;
 
 
 	// Cleanup
-	SDL_DestroyRenderer(m_renderer);
-	SDL_DestroyWindow(m_window);
+	SDL_DestroyRenderer(pRenderer);
+	SDL_DestroyWindow(pWnd);
 	SDL_Quit();
 
-	m_renderer = nullptr;
-	m_window = nullptr;
+	pRenderer = nullptr;
+	pWnd = nullptr;
 }
 
 
 
-void DrawWindow::DrawPolygon(const Geom::Polygon& A) const {
-	const int nVert = A.vertices.size();
+void DrawWindow::DrawPolygon(const Geom::Polygon& InPolygon) const {
+	const int nVert = InPolygon.Vertices.size();
 
 	if (nVert < 3) return;
 
 	for (int ii = 0; ii < nVert - 1; ++ii) {
-		SDL_RenderDrawLine(m_renderer, A.vertices[ii].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
-			A.vertices[ii].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y,
-			A.vertices[ii + 1].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
-			A.vertices[ii + 1].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y);
+		SDL_RenderDrawLine(pRenderer, InPolygon.Vertices[ii].x * fZoom * DRAW_SCALE + SHIFTX + CameraPosition.x,
+			InPolygon.Vertices[ii].y * fZoom * DRAW_SCALE + SHIFTY + CameraPosition.y,
+			InPolygon.Vertices[ii + 1].x * fZoom * DRAW_SCALE + SHIFTX + CameraPosition.x,
+			InPolygon.Vertices[ii + 1].y * fZoom * DRAW_SCALE + SHIFTY + CameraPosition.y);
 	}
-	SDL_RenderDrawLine(m_renderer, A.vertices[nVert - 1].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
-		A.vertices[nVert - 1].y * m_Zoom *DRAW_SCALE + SHIFTY + m_CameraPos.y,
-		A.vertices[0].x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x,
-		A.vertices[0].y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y);
+	SDL_RenderDrawLine(pRenderer, InPolygon.Vertices[nVert - 1].x * fZoom * DRAW_SCALE + SHIFTX + CameraPosition.x,
+		InPolygon.Vertices[nVert - 1].y * fZoom *DRAW_SCALE + SHIFTY + CameraPosition.y,
+		InPolygon.Vertices[0].x * fZoom * DRAW_SCALE + SHIFTX + CameraPosition.x,
+		InPolygon.Vertices[0].y * fZoom * DRAW_SCALE + SHIFTY + CameraPosition.y);
 }
 
-void DrawWindow::DrawSimplex(const Geom::Simplex& s) const
+void DrawWindow::DrawSimplex(const Geom::Simplex& InSimplex) const
 {
-	switch ( s.m_size)
+	switch (InSimplex.iSize)
 	{
 	case 0:
 		return;
 	case 1:
-		const Geom::Point p = ToWindowsCoordinate(s.vertices[0]);
-		SDL_RenderDrawPoint(m_renderer, p.x, p.y);
+		const Geom::Point p = ToWindowsCoordinate(InSimplex.Vertices[0]);
+		SDL_RenderDrawPoint(pRenderer, p.x, p.y);
 		break;
 	case 2:
 	{
-		const Geom::Point p1 = ToWindowsCoordinate(s.vertices[0]);
-		const Geom::Point p2 = ToWindowsCoordinate(s.vertices[1]);
-		SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p2.x, p2.y);
+		const Geom::Point p1 = ToWindowsCoordinate(InSimplex.Vertices[0]);
+		const Geom::Point p2 = ToWindowsCoordinate(InSimplex.Vertices[1]);
+		SDL_RenderDrawLine(pRenderer, p1.x, p1.y, p2.x, p2.y);
 	}
 		break;
 	case 3:
 	{
-		const Geom::Point p1 = ToWindowsCoordinate(s.vertices[0]);
-		const Geom::Point p2 = ToWindowsCoordinate(s.vertices[1]);
-		const Geom::Point p3 = ToWindowsCoordinate(s.vertices[2]);
-		SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p2.x, p2.y);
-		SDL_RenderDrawLine(m_renderer, p1.x, p1.y, p3.x, p3.y);
-		SDL_RenderDrawLine(m_renderer, p3.x, p3.y, p2.x, p2.y);
+		const Geom::Point p1 = ToWindowsCoordinate(InSimplex.Vertices[0]);
+		const Geom::Point p2 = ToWindowsCoordinate(InSimplex.Vertices[1]);
+		const Geom::Point p3 = ToWindowsCoordinate(InSimplex.Vertices[2]);
+		SDL_RenderDrawLine(pRenderer, p1.x, p1.y, p2.x, p2.y);
+		SDL_RenderDrawLine(pRenderer, p1.x, p1.y, p3.x, p3.y);
+		SDL_RenderDrawLine(pRenderer, p3.x, p3.y, p2.x, p2.y);
 	}
 		break;
 	default:
@@ -117,59 +117,46 @@ void DrawWindow::DrawSimplex(const Geom::Simplex& s) const
 
 }
 
-void DrawWindow::DrawHyperPlanes(const Geom::Vector v, const float min, const float max) const
+void DrawWindow::DrawHyperPlanes(const Geom::Vector InNormal, const float min, const float max) const
 {
-	Geom::Vector barAxisPerp = { -v.y, v.x };
+	Geom::Vector barAxisPerp = { -InNormal.y, InNormal.x };
 
-	Geom::Point Pmax = max * v;
+	Geom::Point Pmax = max * InNormal;
 	Geom::Point P1 = Pmax + 100 * barAxisPerp;
 	Geom::Point P2 = Pmax - 100 * barAxisPerp;
 
-	// first plane
-	SDL_RenderDrawLine(m_renderer, P1.x * DRAW_SCALE + SHIFTX,
+	// First plane
+	SDL_RenderDrawLine(pRenderer, P1.x * DRAW_SCALE + SHIFTX,
 		P1.y * DRAW_SCALE + SHIFTY,
 		P2.x * DRAW_SCALE + SHIFTX,
 		P2.y * DRAW_SCALE + SHIFTY);
 
-	Geom::Point Pmin = min * v;
+	Geom::Point Pmin = min * InNormal;
 	P1 = Pmin + 100 * barAxisPerp;
 	P2 = Pmin - 100 * barAxisPerp;
 
-	// first plane
-	SDL_RenderDrawLine(m_renderer, P1.x * DRAW_SCALE + SHIFTX,
+	// Second plane
+	SDL_RenderDrawLine(pRenderer, P1.x * DRAW_SCALE + SHIFTX,
 		P1.y * DRAW_SCALE + SHIFTY,
 		P2.x * DRAW_SCALE + SHIFTX,
 		P2.y * DRAW_SCALE + SHIFTY);
 }
 
-void DrawWindow::DrawLinePassingByA(const Geom::Point A, const Geom::Vector v, const float scale)
-{
-
-	Geom::Point StartingPoint = A;
-	Geom::Point EndPoint = A + scale * v;
-
-	SDL_RenderDrawLine(m_renderer, (int ) (StartingPoint.x * DRAW_SCALE + SHIFTX),
-		(int)(StartingPoint.y * DRAW_SCALE + SHIFTY),
-		(int)(EndPoint.x * DRAW_SCALE + SHIFTX),
-		(int)(EndPoint.y * DRAW_SCALE + SHIFTY));
-
-
-
-}
 
 void DrawWindow::DrawOriginAxis()
 {
 	Geom::Point y0 = ToWindowsCoordinate({ 0, -1000 }); Geom::Point y1 = ToWindowsCoordinate({ 0, 1000 });
 	Geom::Point x0 = ToWindowsCoordinate({ -1000, 0 }); Geom::Point x1 = ToWindowsCoordinate({ 1000, 0 });
 
-	SDL_RenderDrawLine(m_renderer, x0.x, x0.y, x1.x, x1.y);
-	SDL_RenderDrawLine(m_renderer, y0.x, y0.y, y1.x, y1.y);
+	SDL_RenderDrawLine(pRenderer, x0.x, x0.y, x1.x, x1.y);
+	SDL_RenderDrawLine(pRenderer, y0.x, y0.y, y1.x, y1.y);
 
 }
 
-Geom::Vector DrawWindow::ToWindowsCoordinate(Geom::Vector v) const
+Geom::Vector DrawWindow::ToWindowsCoordinate(Geom::Point InPoint) const
 {
-	return { v.x * m_Zoom * DRAW_SCALE + SHIFTX + m_CameraPos.x, v.y * m_Zoom * DRAW_SCALE + SHIFTY + m_CameraPos.y };
+	return { InPoint.x * fZoom * DRAW_SCALE + SHIFTX + CameraPosition.x, 
+				InPoint.y * fZoom * DRAW_SCALE + SHIFTY + CameraPosition.y };
 }
 
 void DrawWindow::CameraMovementEvents(const SDL_Event& event)
@@ -177,26 +164,26 @@ void DrawWindow::CameraMovementEvents(const SDL_Event& event)
 	switch (event.key.keysym.sym)
 	{
 	case SDLK_SPACE: // reset cammera
-		m_CameraPos.x = 0.f; m_CameraPos.y = 0.f;
-		m_Zoom = 1.f;
+		CameraPosition.x = 0.f; CameraPosition.y = 0.f;
+		fZoom = 1.f;
 		break;
 	case SDLK_a:
-		m_CameraPos.x -= 10;
+		CameraPosition.x -= 10;
 		break;
 	case SDLK_d:
-		m_CameraPos.x += 10;
+		CameraPosition.x += 10;
 		break;
 	case SDLK_w:
-		m_CameraPos.y -= 10;
+		CameraPosition.y -= 10;
 		break;
 	case SDLK_s:
-		m_CameraPos.y += 10;
+		CameraPosition.y += 10;
 		break;
 	case SDLK_z:
-		m_Zoom += 0.1;
+		fZoom += 0.1;
 		break;
 	case SDLK_x:
-		m_Zoom -= 0.1;
+		fZoom -= 0.1;
 		break;
 		
 	}

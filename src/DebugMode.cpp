@@ -11,7 +11,7 @@
 
 
 DebugMode::DebugMode():
-	m_QuitDebugMode(false)
+	bQuitDebugMode(false)
 {
 }
 
@@ -29,7 +29,7 @@ void DebugMode::Run()
 	menu.AddOptions("Load events", [&]() {RunLoadEvent();});
 	menu.AddOptions("Back to main menu", [&]() {Quit();});
 
-	while (!m_QuitDebugMode) {
+	while (!bQuitDebugMode) {
 		menu.RunInterface();
 	}
 
@@ -70,7 +70,7 @@ void DebugMode::RunDebugMethodConsistency()
 			if (bIntersectBForce != bIntersectSAT || bIntersectBForce != bIntersectSATOpti || bIntersectBForce != bIntersectGJK
 				|| bIntersectBForce != bIntersectSATOptiItVertex
 				) {
-				std::cout << "Inconsistency Between methods observed" << std::endl;
+				std::cout << "Inconsistency Between Methods observed" << std::endl;
 				pairToDraw.emplace_back(std::pair<Geom::Polygon, Geom::Polygon>(A, B));
 			}
 		}
@@ -89,7 +89,7 @@ void DebugMode::RunDebugMethodConsistency()
 
 void DebugMode::RunLoadEvent()
 {
-	auto events = loadPairsOfPolygons("events.bin");
+	auto events = LoadPairs("events.bin");
 
 	if (events.empty()) return;
 

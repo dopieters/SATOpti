@@ -67,35 +67,40 @@ inline float DotProduct(const Vector A, const Vector B) {
 	return A.x * B.x + A.y * B.y;
 }
 
+
+inline float CrossProd2D(Vector A, Vector B){
+	return A.x * B.y - A.y * B.x;
+}
+
 //Function to sort points by angle 
-bool CompareByAngle(const Vertex a, const Vertex b);
+bool CompareByAngle(const Vertex A, const Vertex B);
 
 
 struct Polygon
 {
-	std::vector<Vertex> vertices;
-	Point baryCenter;
+	std::vector<Vertex> Vertices;
+	Point Barycenter;
 
 	void CalculateBarycenter();
 };
 
 
 struct Simplex {
-	std::array<Point, 3> vertices;
-	int m_size = 0;
+	std::array<Vertex, 3> Vertices;
+	int iSize = 0;
 
-	void Add(const Point& vertex);
-	bool UpdateSimplex(Vector &dir);
+	void Add(const Vertex& InVertex);
+	bool UpdateSimplex(Vector &OutDir);
 
-	bool LineUpdate(Vector &dir);
-	bool TriangleUpdate(Vector& dir);
+	bool LineUpdate(Vector &OutDir);
+	bool TriangleUpdate(Vector& OutDir);
 
 };
 
 
 // algo based on Pavel-Valtr
 // https://cglab.ca/~sander/misc/ConvexGeneration/convex.html
-Polygon MakeConvexPol(int nVertices);
+Polygon MakeConvexPol(int iVertices);
 
 bool DoPolygonsIntersects(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
 bool PolygonsInterTestBForce(const Polygon& RESTRICT A, const Polygon& RESTRICT B);
@@ -109,17 +114,17 @@ std::pair<float, float> GetMinMaxPolygonProjAxis(const Polygon& RESTRICT A, cons
 float GetMaxPolygonProjAxis(const Polygon& RESTRICT A, const Vector d);
 Point GetFurthestPoint(const Polygon& RESTRICT A, const Vector d);
 
-float CrossProd2D(Vector Va, Vector Vb);
 
-// In 2D equivalent to check winding of points
+
+// Segment [AB] and [CD]
 bool SegmentIntersect(Point A, Point B, Point C, Point D);
 
 // Check for every vertex if it is includes in the other polygon
 bool PolygonIncludeInEachOther(const Polygon& RESTRICT A, const Polygon& B);
 
-bool IsPointInsidePolygon(Point A, const Polygon& RESTRICT pol);
-bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT pol, const int left, const int right );
+bool IsPointInsidePolygon(Point A, const Polygon& RESTRICT Pol);
+bool IsPointInsidePolygonRec(Point A, const Polygon& RESTRICT pol, const int LeftIndex, const int RightIndex );
 bool IsPointInsideTriangle(const Point A, const Vertex v0, const Vertex v1, const Vertex v2);
 
-Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector axis, const float limit, const bool isAbvLimit);
+Polygon PolygonComputeReducePol(const Polygon& RESTRICT A, const Vector ProjAxis, const float limit, const bool isAbvLimit);
 }

@@ -15,40 +15,40 @@ DebugDrawModeGJK::~DebugDrawModeGJK() {
 
 void DebugDrawModeGJK::Run()
 {
-	m_isRunning = true;
+	bRunning = true;
 
 	MakePolygons();
 
-	while (m_isRunning) {
-		SDL_RenderClear(m_renderer);
+	while (bRunning) {
+		SDL_RenderClear(pRenderer);
 		ProcessEvents();
 
 		// black background
-		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-		SDL_RenderClear(m_renderer);
+		SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, 255);
+		SDL_RenderClear(pRenderer);
 
 		// draw polygons
 		{
-			SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, 255);
-			DrawPolygon(pol1);
+			SDL_SetRenderDrawColor(pRenderer, 255, 0, 0, 255);
+			DrawPolygon(PolygonA);
 
-			SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
-			DrawPolygon(pol2);
+			SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, 255);
+			DrawPolygon(PolygonB);
 		}
 
 		// Draw simplex
 		{
-			SDL_SetRenderDrawColor(m_renderer, 0, 0, 255, 255);
-			DrawSimplex(simp);
+			SDL_SetRenderDrawColor(pRenderer, 0, 0, 255, 255);
+			DrawSimplex(GJKSimplex);
 		}
 
 
 		// Draw axis
-		SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+		SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
 		DrawOriginAxis();
 
 		// Present the backbuffer
-		SDL_RenderPresent(m_renderer);
+		SDL_RenderPresent(pRenderer);
 	}
 }
 
@@ -59,7 +59,7 @@ void DebugDrawModeGJK::ProcessEvents()
 	{
 		if (event.type == SDL_QUIT)
 		{
-			m_isRunning = false;
+			bRunning = false;
 		}
 		else if (event.type == SDL_KEYDOWN) {
 			switch (event.key.keysym.sym)
@@ -68,7 +68,7 @@ void DebugDrawModeGJK::ProcessEvents()
 				UpdateSimplex();
 				break;
 			case SDLK_BACKSPACE:
-				m_isRunning = false;
+				bRunning = false;
 				break;
 			case SDLK_r:
 				MakePolygons();
@@ -82,33 +82,33 @@ void DebugDrawModeGJK::ProcessEvents()
 
 void DebugDrawModeGJK::MakePolygons()
 {
-	pol1.vertices.clear();
-	pol2.vertices.clear();
-	simp.m_size = 0;
+	PolygonA.Vertices.clear();
+	PolygonB.Vertices.clear();
+	GJKSimplex.iSize = 0;
 
 
-	pol1 = Geom::MakeConvexPol(100);
-	pol2 = Geom::MakeConvexPol(100);
+	PolygonA = Geom::MakeConvexPol(100);
+	PolygonB = Geom::MakeConvexPol(100);
 
 
 }
 
 void DebugDrawModeGJK::UpdateSimplex()
 {
-	if (simp.m_size == 0) {
-		simp.Add(Geom::GetFurthestPoint(pol1, dir) - Geom::GetFurthestPoint(pol2, -dir));
-		dir = -simp.vertices[0];
+	if (GJKSimplex.iSize == 0) {
+		GJKSimplex.Add(Geom::GetFurthestPoint(PolygonA, GJKDir) - Geom::GetFurthestPoint(PolygonB, -GJKDir));
+		GJKDir = -GJKSimplex.Vertices[0];
 	}
 	else {
-		const Geom::Point simpSup = Geom::GetFurthestPoint(pol1, dir) - Geom::GetFurthestPoint(pol2, -dir);
-		if (Geom::DotProduct(simpSup, dir) < 0) {
+		const Geom::Point simpSup = Geom::GetFurthestPoint(PolygonA, GJKDir) - Geom::GetFurthestPoint(PolygonB, -GJKDir);
+		if (Geom::DotProduct(simpSup, GJKDir) < 0) {
 			std::cout << "No collision" << std::endl;
 			return;
 		}
 
-		simp.Add(simpSup);
+		GJKSimplex.Add(simpSup);
 
-		if (simp.UpdateSimplex(dir)) {
+		if (GJKSimplex.UpdateSimplex(GJKDir)) {
 			std::cout << "Collision" << std::endl;
 		}
 
